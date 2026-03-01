@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏨 OTA Daily Learning Loop | 45-Day Mastery</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --red:#e53935;--red2:#c62828;--orange:#ff6d00;--green:#2e7d32;
+  --green-light:#e8f5e9;--red-light:#ffebee;--blue:#1565c0;
+  --bg:#f4f4f8;--card:#fff;--text:#1a1a2e;--muted:#757575;
+  --border:#e0e0e0;--shadow:0 2px 12px rgba(0,0,0,.10);
+  --shadow2:0 6px 24px rgba(0,0,0,.13);
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);min-height:100vh;color:var(--text)}
+#app{max-width:700px;margin:0 auto;padding:16px}
+
+/* ── HEADER ── */
+.header{background:linear-gradient(135deg,var(--red),#b71c1c);color:#fff;border-radius:18px;
+  padding:22px 28px;margin-bottom:20px;display:flex;align-items:center;gap:14px;
+  box-shadow:0 4px 18px rgba(229,57,53,.35)}
+.header-icon{font-size:2.4rem}
+.header h1{font-size:1.3rem;font-weight:700;letter-spacing:-.3px}
+.header p{font-size:.82rem;opacity:.85;margin-top:2px}
+
+/* ── PROGRESS OVERVIEW ── */
+.overview-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:20px}
+.day-dot{border-radius:10px;padding:6px 0;text-align:center;cursor:pointer;
+  font-size:.68rem;font-weight:600;transition:transform .15s,box-shadow .15s;border:2px solid transparent}
+.day-dot:hover{transform:scale(1.08);box-shadow:var(--shadow)}
+.day-dot.done{background:#c8e6c9;color:#1b5e20;border-color:#4caf50}
+.day-dot.today{background:var(--red);color:#fff;border-color:var(--red2);box-shadow:0 2px 8px rgba(229,57,53,.4)}
+.day-dot.locked{background:#f0f0f0;color:#bbb}
+.day-dot .dot-num{font-size:.82rem;font-weight:700;display:block}
+.day-dot .dot-star{font-size:.65rem}
+
+/* ── CARD ── */
+.card{background:var(--card);border-radius:16px;padding:24px;margin-bottom:16px;box-shadow:var(--shadow)}
+
+/* ── DAY INTRO ── */
+.day-banner{background:linear-gradient(135deg,var(--red),var(--orange));color:#fff;
+  border-radius:16px;padding:22px 24px;margin-bottom:16px;box-shadow:0 4px 18px rgba(229,57,53,.3)}
+.day-banner .day-label{font-size:.78rem;font-weight:600;opacity:.8;text-transform:uppercase;letter-spacing:.5px}
+.day-banner .day-title{font-size:1.4rem;font-weight:800;margin:4px 0 6px}
+.day-banner .day-intro{font-size:.88rem;opacity:.9;line-height:1.55}
+.difficulty-badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);
+  color:#fff;border-radius:20px;padding:3px 12px;font-size:.75rem;font-weight:600;margin-top:10px}
+
+/* ── QUESTION ── */
+.q-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.q-num{font-size:.78rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.timer{font-size:1rem;font-weight:700;color:var(--red);background:#fff0f0;
+  padding:4px 12px;border-radius:20px;border:1.5px solid #ffcdd2}
+.timer.warning{color:#e65100;background:#fff3e0;border-color:#ffcc02;animation:pulse 1s infinite}
+.timer.urgent{color:#b71c1c;background:#ffebee;border-color:var(--red);animation:pulse .5s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+
+.q-text{font-size:1.1rem;font-weight:700;line-height:1.5;margin-bottom:12px}
+.clue-btn{background:#fff8e1;border:1.5px dashed #ffb300;color:#e65100;border-radius:10px;
+  padding:8px 16px;font-size:.82rem;font-weight:600;cursor:pointer;width:100%;margin-bottom:12px;
+  transition:background .2s}
+.clue-btn:hover{background:#fff3cd}
+.clue-reveal{background:#fffde7;border:1.5px solid #ffd54f;border-radius:10px;
+  padding:10px 14px;font-size:.85rem;color:#5d4037;margin-bottom:14px;display:none;
+  animation:fadeIn .3s}
+
+/* ── OPTIONS ── */
+.options{display:flex;flex-direction:column;gap:10px}
+.opt{background:#fafafa;border:2px solid var(--border);border-radius:12px;
+  padding:13px 16px;font-size:.92rem;cursor:pointer;transition:all .18s;
+  text-align:left;font-family:inherit;color:var(--text);font-weight:500}
+.opt:hover:not(:disabled){background:#fff5f5;border-color:var(--red);color:var(--red)}
+.opt.correct{background:var(--green-light)!important;border-color:#4caf50!important;color:#1b5e20!important}
+.opt.wrong{background:var(--red-light)!important;border-color:var(--red)!important;color:var(--red)!important;
+  animation:shake .3s}
+.opt.reveal-correct{background:var(--green-light)!important;border-color:#4caf50!important;color:#1b5e20!important}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── EXPLANATION ── */
+.explain-box{background:#e8f5e9;border-left:4px solid #4caf50;border-radius:0 10px 10px 0;
+  padding:12px 16px;font-size:.85rem;line-height:1.55;color:#2e7d32;display:none;animation:fadeIn .4s;margin-top:12px}
+.explain-box.wrong-box{background:#fff8e1;border-color:#ff8f00;color:#5d4037}
+
+/* ── BUTTONS ── */
+.btn{border-radius:12px;padding:12px 28px;font-size:.95rem;font-weight:700;
+  cursor:pointer;border:none;transition:all .18s;font-family:inherit}
+.btn-primary{background:var(--red);color:#fff;width:100%;margin-top:14px}
+.btn-primary:hover{background:var(--red2);transform:translateY(-1px);box-shadow:0 4px 14px rgba(229,57,53,.4)}
+.btn-secondary{background:#f5f5f5;color:var(--text);border:2px solid var(--border)}
+.btn-secondary:hover{background:#efefef}
+.btn-start{background:linear-gradient(135deg,var(--red),var(--orange));color:#fff;
+  width:100%;font-size:1.05rem;padding:15px;border-radius:14px;border:none;cursor:pointer;
+  font-family:inherit;font-weight:700;margin-top:16px;transition:transform .18s,box-shadow .18s;
+  box-shadow:0 4px 18px rgba(229,57,53,.35)}
+.btn-start:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(229,57,53,.45)}
+
+/* ── PROGRESS BAR ── */
+.progress-bar-wrap{height:8px;background:#f0f0f0;border-radius:4px;margin-bottom:16px;overflow:hidden}
+.progress-bar{height:100%;background:linear-gradient(to right,var(--red),var(--orange));border-radius:4px;transition:width .4s}
+
+/* ── SCORE SCREEN ── */
+.score-big{font-size:3.5rem;font-weight:800;color:var(--red);text-align:center;
+  margin:12px 0 4px;line-height:1}
+.score-label{text-align:center;color:var(--muted);font-size:.88rem;margin-bottom:20px}
+.stars{text-align:center;font-size:2.2rem;margin-bottom:14px}
+.key-terms{background:#fafafa;border-radius:12px;padding:16px;margin-top:12px}
+.key-terms h4{font-size:.82rem;color:var(--muted);font-weight:600;text-transform:uppercase;
+  letter-spacing:.4px;margin-bottom:10px}
+.term-row{display:flex;justify-content:space-between;padding:7px 0;
+  border-bottom:1px solid var(--border);font-size:.85rem;gap:8px}
+.term-row:last-child{border-bottom:none}
+.term-name{font-weight:700;color:var(--text);min-width:110px}
+.term-def{color:var(--muted);font-size:.82rem;line-height:1.4}
+.streak-badge{background:linear-gradient(135deg,var(--orange),#ff8f00);color:#fff;
+  border-radius:14px;padding:10px 20px;text-align:center;margin-bottom:16px}
+.streak-badge .s-num{font-size:2rem;font-weight:800;display:block}
+.streak-badge .s-label{font-size:.78rem;opacity:.85}
+
+/* ── HOME ── */
+.home-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:16px 0}
+.stat-box{background:var(--card);border-radius:14px;padding:16px;text-align:center;box-shadow:var(--shadow)}
+.stat-box .s-val{font-size:2rem;font-weight:800;color:var(--red);display:block}
+.stat-box .s-lbl{font-size:.75rem;color:var(--muted);margin-top:2px}
+.zone-pill{display:inline-block;border-radius:20px;padding:3px 12px;
+  font-size:.72rem;font-weight:700;margin-bottom:6px}
+.zone-1{background:#e8f5e9;color:#2e7d32}
+.zone-2{background:#fff3e0;color:#e65100}
+.zone-3{background:#ffebee;color:#c62828}
+
+/* ── MISC ── */
+.confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999}
+.divider{height:1px;background:var(--border);margin:16px 0}
+.text-muted{color:var(--muted);font-size:.83rem}
+.mt8{margin-top:8px}.mt16{margin-top:16px}
+.flex-row{display:flex;gap:10px;align-items:center}
+.emoji-big{font-size:2.5rem;text-align:center;display:block;margin:8px 0}
+.complete-banner{background:linear-gradient(135deg,#1b5e20,#2e7d32);color:#fff;
+  border-radius:16px;padding:24px;text-align:center;margin-bottom:16px}
+.complete-banner h2{font-size:1.5rem;font-weight:800}
+.complete-banner p{opacity:.85;margin-top:6px;font-size:.9rem}
+
+@media(max-width:480px){
+  #app{padding:10px}
+  .overview-grid{grid-template-columns:repeat(5,1fr)}
+  .home-stats{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<canvas class="confetti" id="confetti"></canvas>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  30-DAY OTA CURRICULUM  (5 questions × 30 days = 150 Q's)
+// ═══════════════════════════════════════════════════════════════
+const DAYS = [
+{day:1,theme:"What is an OTA?",emoji:"🌐",zone:1,zoneLabel:"Beginner Zone",
+intro:"Welcome to Day 1! OTA stands for Online Travel Agency — the industry you just joined. Let's nail the fundamentals.",
+keyTerms:[["OTA","Online Travel Agency — digital marketplace for travel bookings"],["Commission","% of booking value paid to OTA by hotel"],["Property","Any bookable accommodation on an OTA platform"]],
+questions:[
+{q:"What does OTA stand for?",clue:"💡 Think of how travelers book hotels online, without calling the hotel directly...",
+opts:["Online Travel Agency","Overseas Tour Advisor","Operational Travel Authority","Official Tourism Association"],a:0,
+ex:"OTA = Online Travel Agency. Agoda, Booking.com, and Expedia are all OTAs — digital marketplaces that connect travelers with accommodations."},
+{q:"Which of these is an OTA?",clue:"💡 An OTA is a marketplace listing many hotels, not a single hotel or airline...",
+opts:["Marriott Hotels","Singapore Airlines","Agoda.com","Hertz Car Rental"],a:2,
+ex:"Agoda is an OTA — a marketplace aggregating thousands of hotels. Marriott and Singapore Airlines are direct suppliers, not OTAs."},
+{q:"How does an OTA primarily earn revenue?",clue:"💡 Hotels pay for every booking that comes through the platform...",
+opts:["Monthly fees from travelers","Commission on each completed booking","Government tourism grants","Airline ticket surcharges"],a:1,
+ex:"OTAs earn commission (typically 15–25%) from hotels for each booking. The guest pays the OTA, which remits the net amount to the hotel."},
+{q:"Agoda is owned by which company?",clue:"💡 This company also owns Booking.com and Priceline...",
+opts:["Alibaba Group","Booking Holdings","Expedia Group","Trip.com Group"],a:1,
+ex:"Agoda is part of Booking Holdings — the world's largest travel group, also parent of Booking.com, Priceline, Kayak, and OpenTable."},
+{q:"In OTA language, what is a 'property'?",clue:"💡 It's where guests sleep when they travel...",
+opts:["A real estate investment","Any bookable accommodation (hotel, villa, hostel, etc.)","An OTA regional office","A vacation package deal"],a:1,
+ex:"'Property' in OTA terms = any accommodation listed on the platform — hotels, boutique guesthouses, villas, hostels, resorts, and more."}
+]},
+
+{day:2,theme:"The OTA Landscape",emoji:"🗺️",zone:1,zoneLabel:"Beginner Zone",
+intro:"Day 2! Meet the major players in the OTA world — your ecosystem of competitors and partners.",
+keyTerms:[["Booking Holdings","Parent of Agoda, Booking.com, Priceline, Kayak"],["Metasearch","Price comparison sites like Trivago & Google Hotels"],["Airbnb","Peer-to-peer home sharing platform"]],
+questions:[
+{q:"Which OTA is particularly dominant in the Asia-Pacific market?",clue:"💡 Founded and headquartered in Bangkok, Thailand...",
+opts:["Expedia","Hotels.com","Agoda","Trivago"],a:2,
+ex:"Agoda was founded in Bangkok and has exceptionally strong coverage and brand recognition across Asia-Pacific — its home turf."},
+{q:"Booking.com's tiered loyalty program is called?",clue:"💡 The name suggests being smart or brilliant...",
+opts:["Star Rewards","Elite Club","Genius","Diamond Status"],a:2,
+ex:"Booking.com's loyalty program is 'Genius' — offering discounts at Genius Level 1, 2, and 3 based on booking history."},
+{q:"Airbnb primarily disrupted the market with what concept?",clue:"💡 Their original name had 'Air' and 'Breakfast' in it...",
+opts:["Ultra-budget hotel chains","Peer-to-peer home and apartment sharing","Business travel management","Airline seat upgrades"],a:1,
+ex:"Airbnb = 'Air Bed & Breakfast.' It created a peer-to-peer marketplace where homeowners rent out rooms or entire homes to travelers."},
+{q:"Which is a 'metasearch' engine, NOT a booking OTA?",clue:"💡 It compares prices but you ultimately book on another site...",
+opts:["Agoda","Booking.com","Trivago","Expedia"],a:2,
+ex:"Trivago is a metasearch engine — it compares hotel prices across OTAs and direct sites, then redirects users to book. It's owned by Expedia Group."},
+{q:"Ctrip rebranded globally to which name?",clue:"💡 The new name suggests global travel and exploration...",
+opts:["TravelPro","Trip.com","JetGo","ChinaTravel"],a:1,
+ex:"Ctrip (China's largest OTA) rebranded to Trip.com Group for its international expansion — it's one of the world's largest travel service companies."}
+]},
+
+{day:3,theme:"Hotel–OTA Partnership",emoji:"🤝",zone:1,zoneLabel:"Beginner Zone",
+intro:"Day 3! Hotels are your partners (clients). Understanding how they work with OTAs is essential for your role.",
+keyTerms:[["Partner Agreement","Contract between hotel and OTA defining terms"],["Extranet","Hotel's backend portal to manage their OTA listing"],["Market Manager","OTA employee who manages hotel partnerships"]],
+questions:[
+{q:"What is the typical OTA commission range charged to hotels?",clue:"💡 It's somewhere between one-fifth and one-quarter of the booking...",
+opts:["1–5%","5–10%","15–25%","40–50%"],a:2,
+ex:"OTAs typically charge hotels 15–25% commission. Agoda's exact rate varies by contract and market, but this range is industry standard."},
+{q:"When a hotel first joins Agoda's platform, this process is called?",clue:"💡 It's like starting a new job — your first day...",
+opts:["Activation","Onboarding","Launching","Registration"],a:1,
+ex:"'Onboarding' is the process of getting a new hotel set up on the OTA platform — signing contracts, uploading content, and going live."},
+{q:"Who at Agoda is responsible for managing a hotel partner relationship?",clue:"💡 They manage a geographic market area...",
+opts:["Revenue Manager","Content Specialist","Market Manager / Partner Manager","IT Support"],a:2,
+ex:"A Market Manager (or Partner Manager) is the Agoda person who manages relationships with hotel partners — your likely role!"},
+{q:"What information does a hotel need to provide to list on an OTA?",clue:"💡 Think of what a traveler needs to decide whether to book...",
+opts:["Only the address","Photos, rates, room types, amenities, policies, and description","Just the price","Only the owner's contact info"],a:1,
+ex:"Complete listings include: professional photos, rates, room types, amenities, property description, location, cancellation policies, and check-in info."},
+{q:"What is an 'extranet' in hotel-OTA terminology?",clue:"💡 It's a portal where hotels log in to manage their listing...",
+opts:["A public-facing website","The hotel's private backend management portal on the OTA","An external travel agency","A type of hotel amenity"],a:1,
+ex:"The extranet is the hotel's backend dashboard on the OTA — where they update rates, availability, photos, policies, and view booking data."}
+]},
+
+{day:4,theme:"Occupancy Rate",emoji:"📊",zone:1,zoneLabel:"Beginner Zone",
+intro:"Day 4! Occupancy Rate is one of the most fundamental hotel metrics. You'll use this in every client conversation.",
+keyTerms:[["Occupancy Rate","Rooms sold ÷ Total rooms × 100%"],["Full House","100% occupancy — all rooms sold"],["Stop Sell","Blocking bookings when fully booked"]],
+questions:[
+{q:"How is occupancy rate calculated?",clue:"💡 Divide rooms sold by total rooms, multiply by 100...",
+opts:["(Rooms sold ÷ Room rate) × 100","(Rooms sold ÷ Total rooms available) × 100","(Revenue ÷ Rooms) × 100","(Guests ÷ Staff) × 100"],a:1,
+ex:"Occupancy Rate = (Rooms Sold ÷ Total Rooms Available) × 100. Simple but powerful — the backbone of hotel performance."},
+{q:"A hotel has 200 rooms. Last night, 150 were occupied. Occupancy rate?",clue:"💡 150 out of 200 = ?%",
+opts:["65%","70%","75%","80%"],a:2,
+ex:"150 ÷ 200 × 100 = 75% occupancy. Solid performance — most hotels target 70–85% as a sustainable range."},
+{q:"When a hotel has very HIGH occupancy (e.g. 95%), what typically happens to rates?",clue:"💡 High demand + limited supply = ?",
+opts:["Rates drop dramatically","Rates stay exactly the same","Rates tend to increase","The hotel closes"],a:2,
+ex:"High occupancy signals high demand. Smart revenue management raises rates when demand exceeds supply — like airline pricing."},
+{q:"What does 'Full House' mean in hotel language?",clue:"💡 No more rooms to sell...",
+opts:["Only the function rooms are booked","The hotel restaurant is full","100% occupancy — every room is sold","The lobby is crowded"],a:2,
+ex:"'Full House' = 100% occupancy. The hotel is completely sold out. This triggers a 'Stop Sell' on all booking channels including the OTA."},
+{q:"Why is occupancy rate alone NOT enough to measure hotel success?",clue:"💡 A hotel could be full but charging very little...",
+opts:["Because it's too hard to calculate","Because it ignores the rate charged per room","Because it only counts weekdays","Because OTAs don't track it"],a:1,
+ex:"Occupancy alone doesn't show revenue quality. A hotel at 100% with $20/room is worse than 80% at $150/room — hence why ADR and RevPAR matter."}
+]},
+
+{day:5,theme:"ADR – Average Daily Rate",emoji:"💰",zone:1,zoneLabel:"Beginner Zone",
+intro:"Day 5! ADR tells you HOW MUCH hotels earn per sold room. It's half of the RevPAR equation you'll master tomorrow.",
+keyTerms:[["ADR","Average Daily Rate = Room Revenue ÷ Rooms Sold"],["CompSet","Competitive Set — hotels used for benchmarking ADR"],["Pricing Strategy","How a hotel sets its room rates"]],
+questions:[
+{q:"ADR stands for?",clue:"💡 It's the average amount charged per night per room...",
+opts:["Annual Daily Revenue","Average Daily Rate","Adjusted Demand Ratio","Available Daily Rooms"],a:1,
+ex:"ADR = Average Daily Rate. It measures the average revenue earned per sold room per night. A core hotel performance metric."},
+{q:"How is ADR calculated?",clue:"💡 Divide total room revenue by the number of rooms actually sold...",
+opts:["Total revenue ÷ Total rooms","Room revenue ÷ Rooms sold","Occupancy × Room price","Revenue ÷ Number of guests"],a:1,
+ex:"ADR = Total Room Revenue ÷ Number of Rooms Sold. Only sold rooms count — not empty ones. Compare with RevPAR which uses ALL rooms."},
+{q:"Hotel earned $15,000 room revenue by selling 100 rooms. ADR = ?",clue:"💡 $15,000 divided by 100 rooms = ?",
+opts:["$100","$150","$200","$250"],a:1,
+ex:"$15,000 ÷ 100 = $150 ADR. Every sold room earned an average of $150 per night."},
+{q:"What is a hotel's 'CompSet'?",clue:"💡 Hotels benchmark themselves against similar rivals...",
+opts:["A software tool for pricing","A group of similar competitor hotels used for comparison","A type of hotel room","A discount program"],a:1,
+ex:"CompSet = Competitive Set. A hotel selects 5–8 similar competing hotels to benchmark ADR, occupancy, and RevPAR against. Agoda provides this data."},
+{q:"If a hotel's ADR is much lower than its CompSet, what should it consider?",clue:"💡 Being too cheap relative to competition is leaving money on the table...",
+opts:["Immediately close the hotel","Reviewing and potentially raising its rates","Lowering rates even further","Removing itself from OTAs"],a:1,
+ex:"If ADR lags the CompSet, the hotel may be underpricing. But context matters — lower service levels or fewer amenities may justify lower rates."}
+]},
+
+{day:6,theme:"RevPAR — The Key Metric",emoji:"📈",zone:1,zoneLabel:"Beginner Zone",
+intro:"Day 6! RevPAR combines occupancy AND rate into one powerful number. Mastering this impresses any hotelier.",
+keyTerms:[["RevPAR","Revenue Per Available Room = ADR × Occupancy %"],["TRevPAR","Total Revenue Per Available Room (all hotel revenue)"],["Index","RevPAR compared to competitive set (100 = parity)"]],
+questions:[
+{q:"RevPAR stands for?",clue:"💡 It measures revenue across ALL rooms, not just sold ones...",
+opts:["Revenue Per Available Room","Rate Per Available Room","Revenue Per Adjusted Rate","Room Pricing And Revenue"],a:0,
+ex:"RevPAR = Revenue Per Available Room. Unlike ADR, it accounts for BOTH the rate charged AND the occupancy — a more complete picture."},
+{q:"How do you calculate RevPAR using ADR and Occupancy?",clue:"💡 Multiply the two key metrics together...",
+opts:["ADR + Occupancy %","ADR ÷ Occupancy %","ADR × Occupancy %","ADR – Occupancy %"],a:2,
+ex:"RevPAR = ADR × Occupancy Rate. Example: ADR $120 × 75% occupancy = RevPAR $90. Simple and powerful."},
+{q:"ADR is $200 and occupancy is 70%. What is RevPAR?",clue:"💡 $200 × 0.70 = ?",
+opts:["$100","$120","$140","$160"],a:2,
+ex:"$200 × 70% = $140 RevPAR. This means the hotel earns $140 for every available room (sold or not) each night."},
+{q:"Why is RevPAR better than just tracking occupancy OR ADR alone?",clue:"💡 You need both price and volume to measure success...",
+opts:["RevPAR is easier to calculate","It combines volume (occupancy) AND pricing (ADR) into one metric","RevPAR is older so more trusted","Hotels prefer RevPAR for tax purposes"],a:1,
+ex:"RevPAR captures the full picture: a hotel could have high ADR but low occupancy, or high occupancy but rock-bottom rates. RevPAR reveals both problems."},
+{q:"What does a 'RevPAR Index' above 100 mean?",clue:"💡 100 = exactly equal to competitors; what does above mean?",
+opts:["The hotel needs to lower rates","The hotel is outperforming its competitive set","The hotel has 100% occupancy","The hotel must raise prices immediately"],a:1,
+ex:"RevPAR Index >100 = hotel is outperforming its competitive set. Index of 110 = earning 10% more RevPAR than the market average. Great news for partners!"}
+]},
+
+{day:7,theme:"Room Types & Configurations",emoji:"🛏️",zone:1,zoneLabel:"Beginner Zone",
+intro:"Day 7! Room types are core product knowledge. Guests and hotels talk about these constantly — know them cold.",
+keyTerms:[["Twin","Room with two separate single beds"],["Suite","Room with separate living and sleeping areas"],["Superior","Step above Standard — better view or size"]],
+questions:[
+{q:"What is a 'Twin' room?",clue:"💡 Think of the word 'twins' — two of something...",
+opts:["A room with one large bed for two","A room with two separate single beds","Two connecting rooms","A room with a bunk bed"],a:1,
+ex:"A Twin room has two separate single beds — ideal for friends traveling together or colleagues sharing a room."},
+{q:"What defines a 'Suite'?",clue:"💡 It has more than just a bedroom...",
+opts:["The largest room in a hotel","A room with a separate living area AND bedroom","Any room with a sea view","A room costing over $500/night"],a:1,
+ex:"A Suite has distinct living and sleeping areas — typically a sitting room and separate bedroom. Presidential Suite = most premium suite."},
+{q:"What does 'Superior' mean in hotel room categorization?",clue:"💡 Superior = better than Standard...",
+opts:["The cheapest room available","Exactly the same as Standard","A step up from Standard (better view, floor, or size)","A room with butler service"],a:2,
+ex:"'Superior' rooms are one tier above Standard — often on higher floors, with better views, or slightly more space. Hierarchy: Standard < Superior < Deluxe < Suite."},
+{q:"A 'King' room means?",clue:"💡 Named after royalty — it's the biggest bed size...",
+opts:["A room with a king-sized bed (one large bed)","A room with two king-sized beds","The most expensive room","A historical-themed room"],a:0,
+ex:"King room = one king-sized bed (roughly 76\"×80\"). Ideal for couples. Different from 'Double' which has a double/queen bed."},
+{q:"What does 'connecting rooms' mean?",clue:"💡 Think of families wanting adjacent rooms...",
+opts:["Two rooms that share a balcony","Two rooms with an internal door between them","Rooms connected to the restaurant","Rooms with smart home technology"],a:1,
+ex:"Connecting rooms share an internal door, allowing guests to move between rooms privately — popular with families and groups."}
+]},
+
+{day:8,theme:"Rate Plans & Meal Bases",emoji:"🍳",zone:2,zoneLabel:"Intermediate Zone",
+intro:"Day 8! Rate plans define WHAT is included in the booking. Hotels list multiple plans — know what each means.",
+keyTerms:[["BAR","Best Available Rate — lowest publicly available rate"],["RO","Room Only — no meals included"],["BB","Bed & Breakfast — room + morning meal"]],
+questions:[
+{q:"BAR stands for?",clue:"💡 It's the best publicly available rate at any given time...",
+opts:["Basic Amenity Rate","Best Available Rate","Base Accommodation Rate","Balanced Average Revenue"],a:1,
+ex:"BAR = Best Available Rate. The lowest publicly available, non-discounted rate. It fluctuates with demand — the benchmark for all other rates."},
+{q:"What does a 'Non-Refundable' rate mean for a guest?",clue:"💡 The guest saves money but loses flexibility...",
+opts:["Full refund any time","Partial refund if cancelled","No refund — cheaper rate but cancellation means losing money","Refund only if hotel cancels"],a:2,
+ex:"Non-refundable = cheaper rate in exchange for no cancellation flexibility. If guest cancels, hotel keeps the full payment. Low risk for hotels, good for filling rooms."},
+{q:"What does 'BB' stand for in hotel rate plans?",clue:"💡 Think of what you eat first thing in the morning...",
+opts:["Budget Base","Bed & Breakfast","Booking Bonus","Beach and Bar"],a:1,
+ex:"BB = Bed & Breakfast. Room + breakfast included in the rate. Very popular globally. Includes: RO (Room Only), BB, HB (Half Board), FB (Full Board)."},
+{q:"What is a 'Fully Flexible' or 'Free Cancellation' rate?",clue:"💡 Maximum flexibility for the guest — at a price premium...",
+opts:["Cheapest rate available","Non-refundable with meal inclusion","Higher rate allowing free cancellation up to a deadline","Rate that changes every hour"],a:2,
+ex:"Flexible rates cost more than non-refundable rates but allow cancellation (often until 24–72 hrs before arrival). Preferred by business travelers."},
+{q:"'HB' in hotel rate plans stands for?",clue:"💡 Half the meals are included...",
+opts:["Hotel Bonus","Half Board (breakfast + dinner)","High Budget","Holiday Base"],a:1,
+ex:"HB = Half Board. Includes room + two meals (usually breakfast + dinner). FB = Full Board (all three meals). AI = All Inclusive (meals + drinks + activities)."}
+]},
+
+{day:9,theme:"Property Types",emoji:"🏨",zone:2,zoneLabel:"Intermediate Zone",
+intro:"Day 9! Agoda lists many accommodation types beyond hotels. Know what you're selling and to whom.",
+keyTerms:[["Boutique Hotel","Small, design-focused hotel with unique character"],["Serviced Apartment","Hotel-like unit with kitchen & living space"],["Hostel","Budget accommodation with shared dorms"]],
+questions:[
+{q:"What best describes a 'Boutique Hotel'?",clue:"💡 Think: small, stylish, unique — the opposite of a generic chain hotel...",
+opts:["A large hotel chain with 1,000+ rooms","Small, individually designed hotel with unique character and personalized service","A hotel inside a shopping mall","Any hotel under $50 per night"],a:1,
+ex:"Boutique hotels are typically small (under 100 rooms), independently owned, design-focused, and offer personalized service — a strong selling point on Agoda."},
+{q:"What is a 'Serviced Apartment'?",clue:"💡 It's like living in an apartment but with hotel-like services...",
+opts:["A hotel suite on the top floor","Self-contained apartment with kitchen, living area + hotel housekeeping","An apartment shared with the owner","A room with just a kitchenette"],a:1,
+ex:"Serviced apartments cater to longer stays — they have full kitchens, living rooms, and laundry, plus hotel services. Popular with relocating professionals and families."},
+{q:"What makes a 'Resort' different from a standard hotel?",clue:"💡 Think of a destination in itself — you barely need to leave...",
+opts:["Resorts are cheaper than hotels","Resorts are only on beaches","Resorts are self-contained with extensive amenities (pools, spa, dining, activities)","Resorts never have room service"],a:2,
+ex:"A Resort is a destination in itself — multiple pools, restaurants, spa, recreational activities. Guests may spend their entire stay on property."},
+{q:"A 'Ryokan' is a traditional accommodation type from which country?",clue:"💡 Think of tatami mats, onsen, and kaiseki dining...",
+opts:["Thailand","China","Japan","South Korea"],a:2,
+ex:"Ryokan = traditional Japanese inn. Features tatami mat rooms, yukata robes, onsen (hot spring baths), and multi-course kaiseki meals. Premium cultural experience."},
+{q:"What is a 'Hostel' primarily known for?",clue:"💡 Backpackers love these — very budget friendly...",
+opts:["Luxury rooms with personal butler","Budget accommodation with shared dormitory-style rooms","Business conference facilities","Boutique design experiences"],a:1,
+ex:"Hostels target budget travelers. They offer shared dormitories (bunk beds in shared rooms) at very low prices. Private rooms available too. Strong on Agoda in Asia."}
+]},
+
+{day:10,theme:"Star Ratings & Categories",emoji:"⭐",zone:2,zoneLabel:"Intermediate Zone",
+intro:"Day 10! Star ratings help guests set expectations. But there's nuance — review scores matter just as much today.",
+keyTerms:[["Star Rating","Official classification of hotel quality (1–5 stars)"],["Guest Review Score","Average rating given by guests after stays"],["Agoda Gold Circle","Agoda's award for top-performing hotel partners"]],
+questions:[
+{q:"What does a 5-star hotel rating promise guests?",clue:"💡 The highest tier — think luxury, service, and facilities...",
+opts:["Low prices for budget travelers","Top-tier luxury: impeccable service, premium amenities, fine dining","Only available for business travelers","Exactly 500 rooms or more"],a:1,
+ex:"5-star = luxury. Expect 24/7 concierge, multiple dining outlets, spa, pools, premium bedding, turn-down service. Examples: Four Seasons, Mandarin Oriental."},
+{q:"Who typically assigns official hotel star ratings?",clue:"💡 It's an official body, not the hotel itself...",
+opts:["The hotel owner self-declares","Government tourism boards or accredited rating organizations","Guests through reviews","OTAs like Agoda"],a:1,
+ex:"Star ratings are assigned by government tourism boards or accredited rating agencies. Standards vary by country — a 4-star in Thailand may differ from 4-star in France."},
+{q:"What is the key difference between a star rating and a guest review score?",clue:"💡 One is official, one is subjective crowd feedback...",
+opts:["They are exactly the same thing","Stars are assigned by authorities; review scores are guest opinions — both matter","Review scores are more official than stars","Stars are given by Agoda; reviews are from travel agents"],a:1,
+ex:"Star rating = official classification of facilities and service standards. Review score = average guest satisfaction score. A 3-star hotel with 9.2/10 reviews can outperform a 5-star with 7.8."},
+{q:"Agoda's 'Gold Circle Award' is given to?",clue:"💡 Agoda rewards its best performing partners...",
+opts:["Hotels with the most rooms","Top-performing hotel partners with excellent metrics across bookings, reviews, and content","Hotels that pay the highest commission","Hotels open for more than 50 years"],a:1,
+ex:"Agoda's Gold Circle Award recognizes outstanding hotel partners based on booking performance, guest review scores, and listing quality. It's a badge of excellence."},
+{q:"A hotel is listed as 'Unrated' on Agoda. What does this mean?",clue:"💡 It doesn't mean the hotel is bad...",
+opts:["The hotel scored zero in reviews","The hotel has not received an official star classification","The hotel is brand new and not yet open","Agoda has removed the hotel from rankings"],a:1,
+ex:"'Unrated' simply means no official star classification has been assigned — common for smaller independent properties. The hotel may still have excellent review scores."}
+]},
+
+{day:11,theme:"Yield Management",emoji:"🎯",zone:2,zoneLabel:"Intermediate Zone",
+intro:"Day 11! Yield management is the art of selling the right room at the right time to the right guest at the right price.",
+keyTerms:[["Yield Management","Optimizing pricing based on demand to maximize revenue"],["Perishable Inventory","Unsold hotel rooms = lost revenue forever"],["High Season","Period of peak demand and higher rates"]],
+questions:[
+{q:"Yield management in hotels is best described as?",clue:"💡 Airlines perfected this — hotels adopted it...",
+opts:["Making hotel beds for guests","Selling the right room, to the right guest, at the right price, at the right time","Managing hotel food and beverage yields","Counting the number of check-ins per day"],a:1,
+ex:"Yield management maximizes revenue by adjusting prices based on demand signals — events, seasons, booking pace, competitive rates. Airlines pioneered it; hotels followed."},
+{q:"Why are hotel rooms called 'perishable inventory'?",clue:"💡 Like fresh food, if not sold today, the opportunity is gone...",
+opts:["Because rooms deteriorate over time","An unsold room tonight can never be sold — that revenue is lost forever","Because hotel bedding expires","Because guests sometimes damage rooms"],a:1,
+ex:"A hotel room is perishable — an empty room on Tuesday can never be resold on Wednesday. This urgency drives yield management: better a discounted room than an empty one."},
+{q:"A major music festival is announced for your partner hotel's city. What should the hotel do to rates?",clue:"💡 High demand event = pricing opportunity...",
+opts:["Lower rates to attract festival goers","Keep rates exactly the same","Raise rates — demand will spike during the event","Close the hotel for the event"],a:2,
+ex:"Events drive demand spikes. Smart revenue management raises rates before competitors do. Hotels that fail to adjust yield management lose significant revenue."},
+{q:"What is 'high season' in hotel terminology?",clue:"💡 When everyone wants to travel to a destination...",
+opts:["The period when the hotel is under renovation","The time of peak demand — usually holidays, school breaks, or local events","Any month with the letter 'R' in it","January to March in all markets"],a:1,
+ex:"High season = peak demand period. This varies by destination. Beach resorts peak in summer; ski resorts peak in winter; city hotels peak during major events or conferences."},
+{q:"A hotel sees bookings are very slow 3 weeks before a date. What yield management action is most appropriate?",clue:"💡 Empty rooms approaching = time to stimulate demand...",
+opts:["Raise rates to maintain premium image","Do nothing — guests will come eventually","Launch a promotion or lower rates to stimulate bookings","Close the hotel for maintenance"],a:2,
+ex:"If pace is slow, smart yield management involves promotions, rate reductions, or targeted deals through OTAs to fill those rooms before the date arrives."}
+]},
+
+{day:12,theme:"Dynamic Pricing",emoji:"📉📈",zone:2,zoneLabel:"Intermediate Zone",
+intro:"Day 12! Dynamic pricing means rates change in real-time based on demand signals. It's how smart hotels maximize revenue.",
+keyTerms:[["Dynamic Pricing","Rates that change automatically based on demand"],["RMS","Revenue Management System — software that automates pricing"],["Demand Signal","Factor that triggers a price change (event, season, competitor rates)"]],
+questions:[
+{q:"Dynamic pricing means?",clue:"💡 'Dynamic' = changing, not fixed...",
+opts:["Rates are fixed for the whole year","Rates change in real-time based on supply and demand","Rates are set by the government","Discounts given to loyal customers"],a:1,
+ex:"Dynamic pricing = flexible pricing that adjusts automatically (or manually) based on demand, competition, booking pace, and market conditions. Standard industry practice."},
+{q:"A Revenue Management System (RMS) does what?",clue:"💡 It's software that helps hotels price automatically...",
+opts:["Manages housekeeping schedules","Automates rate optimization based on demand data and algorithms","Processes guest check-ins","Handles hotel accounting"],a:1,
+ex:"An RMS (like IDeaS or Duetto) automatically analyzes booking data, competitor rates, and demand signals to recommend or set optimal rates in real-time."},
+{q:"It's a rainy Tuesday in January — a beach resort's slowest period. Dynamic pricing suggests?",clue:"💡 Low demand calls for competitive pricing...",
+opts:["Raise rates to cover costs","Maintain the same rate as peak season","Lower rates or launch a promo to stimulate bookings","Remove the hotel from all OTAs"],a:2,
+ex:"Low demand periods call for competitive, stimulative pricing. Dynamic pricing lowers rates or triggers promotions to attract price-sensitive leisure travelers."},
+{q:"'Last Minute Deals' are an example of dynamic pricing designed to?",clue:"💡 Hotels don't want empty rooms tomorrow...",
+opts:["Reward guests who booked early","Fill unsold rooms close to arrival date by offering discounts","Only serve business travelers","Punish guests who cancel"],a:1,
+ex:"Last-minute deals target travelers who are flexible — offering discounts to fill rooms that would otherwise go empty. Better some revenue than zero."},
+{q:"Which factor does NOT typically drive dynamic pricing changes?",clue:"💡 Pricing is driven by data, not personal feelings...",
+opts:["A major conference in the city","School holiday period","The hotel owner's personal mood","A competitor suddenly lowering their rates"],a:2,
+ex:"Dynamic pricing responds to data: events, seasons, competitor moves, booking pace. The owner's mood is not a data signal — pricing should be objective and market-driven."}
+]},
+
+{day:13,theme:"Rate Parity",emoji:"⚖️",zone:2,zoneLabel:"Intermediate Zone",
+intro:"Day 13! Rate parity is a hot topic in OTA partnerships. Understanding it helps you navigate conversations with hotel partners.",
+keyTerms:[["Rate Parity","Same rate offered across all booking channels"],["Best Price Guarantee","OTA promise to match lowest price anywhere"],["Retail Rate","Standard publicly available rate"]],
+questions:[
+{q:"Rate parity means?",clue:"💡 'Parity' = equality. All channels must be equal...",
+opts:["Hotels charge more on OTAs than direct","The same room rate is offered across all booking channels","OTAs always have lower prices than direct","Hotels can set different prices for each OTA"],a:1,
+ex:"Rate parity requires hotels to offer the same rate across all channels (OTAs, direct website, phone bookings). OTAs enforce this to stay price-competitive."},
+{q:"Why do OTAs require rate parity from hotel partners?",clue:"💡 If the hotel's own site is cheaper, why would anyone book on the OTA?",
+opts:["To prevent hotels from making too much money","So OTAs remain price-competitive and guests have no reason to book elsewhere","Because government regulations require it","To protect small hotels from big chains"],a:1,
+ex:"Rate parity protects the OTA's value proposition. If hotels offer lower rates on their own site, travelers will bypass the OTA — hurting the OTA's business."},
+{q:"A hotel secretly offers 10% lower rates on its own website than on Agoda. This violates?",clue:"💡 It's breaking the equal pricing agreement...",
+opts:["Nothing — hotels can charge what they want","The rate parity clause in its OTA partner agreement","Environmental regulations","Staff employment laws"],a:1,
+ex:"Offering lower rates outside the OTA violates rate parity. Agoda may respond by reducing the hotel's ranking, removing promotions, or escalating to contract review."},
+{q:"What is a hotel's 'Best Price Guarantee' typically about?",clue:"💡 OTAs promise they won't be beaten on price...",
+opts:["The hotel guarantees its rooms are the best quality","OTA promises guests won't find a lower public rate elsewhere","Hotels guarantee no price changes for 12 months","Guests get a refund if they find a better hotel"],a:1,
+ex:"Best Price Guarantee = the OTA's promise to guests that they offer the lowest available rate. This relies on rate parity — if hotels have lower rates elsewhere, the guarantee fails."},
+{q:"Rate parity is increasingly being challenged in many markets because?",clue:"💡 Hotels want more freedom to price direct bookings differently...",
+opts:["Hotels found it reduces their profits on OTAs","Hotels and regulators argue parity clauses reduce competition and limit hotels' ability to promote direct bookings","Guests prefer parity","OTAs make more money without parity"],a:1,
+ex:"Many countries (EU, Australia) have weakened parity clauses as anti-competitive. Narrow parity (same price, but hotels can offer members-only deals directly) is the evolving compromise."}
+]},
+
+{day:14,theme:"Promotions & Deals",emoji:"🏷️",zone:2,zoneLabel:"Intermediate Zone",
+intro:"Day 14! Promotions drive bookings for hotel partners. As a Market Manager, you'll recommend and set these up.",
+keyTerms:[["Early Bird Deal","Discount for booking well in advance"],["Flash Sale","Short-duration, deep discount promotion"],["Minimum Stay","Requirement to book at least X nights"]],
+questions:[
+{q:"What is an 'Early Bird' promotion?",clue:"💡 Reward guests who plan ahead...",
+opts:["A discount for guests who check in before 8am","A discount for booking well in advance of the arrival date","A deal only available on early morning flights","A discount for the first guest of each day"],a:1,
+ex:"Early Bird deals reward advance planners with discounts — typically 10–20% off for bookings made 30, 60, or 90+ days in advance. Helps hotels secure bookings early."},
+{q:"A 'Flash Sale' in OTA promotions is best described as?",clue:"💡 Think lightning-fast, limited-time, deep discounts...",
+opts:["A promotion running for 3 months","A 24–72 hour promotion with significant discounts to drive urgent bookings","A discount for guests named 'Flash'","A sale during the monsoon season"],a:1,
+ex:"Flash Sales run for 24–72 hours with 20–50% discounts. The urgency drives conversions. Agoda's 'Secret Deals' and 'Flash Sales' spike traffic and fill rooms fast."},
+{q:"'Member Deals' on Agoda are available to?",clue:"💡 Loyalty is rewarded...",
+opts:["All guests regardless of membership","Guests who are logged into the Agoda app/account","Only Agoda employees","Hotels with premium listings"],a:1,
+ex:"Agoda Member Deals are exclusive discounts for signed-in Agoda users — incentivizing account creation, app downloads, and loyalty. Hotels benefit from higher conversion."},
+{q:"What is a 'Minimum Stay' requirement?",clue:"💡 Some deals only make sense for longer visits...",
+opts:["Guests must stay at least 1 night (standard)","Guests must book a minimum number of nights to access a rate or property","Guests must arrive before midnight","A rate only for monthly stays"],a:1,
+ex:"Minimum Stay (e.g., '3-night minimum') lets hotels fill calendars efficiently — especially around events or peak dates. A 5-night stay beats 5 single-night gaps."},
+{q:"What is a 'Geo-targeted' promotion?",clue:"💡 It targets guests by their location...",
+opts:["A promotion for mountain hotels","A deal only visible to users in a specific country or region","A promotion based on the hotel's location","A discount for domestic travelers only"],a:1,
+ex:"Geo-targeting shows specific deals to users in certain countries (e.g., 15% off for Thai residents booking local hotels). Useful for domestic tourism campaigns."}
+]},
+
+{day:15,theme:"Cancellation Policies",emoji:"❌",zone:2,zoneLabel:"Intermediate Zone",
+intro:"Day 15! Cancellation policies define what happens when plans change. Guests ask about these constantly.",
+keyTerms:[["Free Cancellation","Can cancel without charge before deadline"],["No Show","Guest booked but never arrived"],["Cancellation Deadline","Last time guest can cancel without penalty"]],
+questions:[
+{q:"'Free Cancellation' on an OTA listing means?",clue:"💡 Flexibility for the guest — with a time limit...",
+opts:["The hotel never charges anyone for anything","Guest can cancel without penalty before the specified deadline","Cancellation is free forever even day of arrival","Only applies to business travelers"],a:1,
+ex:"Free Cancellation = no charge if cancelled by the deadline (usually 24–72 hours before check-in). After the deadline, penalties apply. Always check the specific policy."},
+{q:"What is a 'No Show' in hotel terminology?",clue:"💡 The guest confirmed but then didn't appear...",
+opts:["A guest who arrives very late","A guest who made a reservation but never arrived without cancelling","A hotel that closed unexpectedly","A failed OTA booking"],a:1,
+ex:"No Show = booked reservation, guest didn't arrive, didn't cancel. Hotels typically charge the full first night rate (or full stay for non-refundable bookings). Major revenue loss otherwise."},
+{q:"A non-refundable booking guest wants to cancel. What happens?",clue:"💡 The clue is in the name: non-refundable...",
+opts:["Full refund — hotels must always refund","Partial refund — 50% returned","No refund — hotel keeps the full payment","Free cancellation within 24 hours only"],a:2,
+ex:"Non-refundable = no refund under any circumstances (barring exceptional situations handled case-by-case). Guests accepted this when booking the cheaper rate."},
+{q:"Why do some hotels charge 'first night penalty' for late cancellations?",clue:"💡 The hotel already reserved that room for the guest...",
+opts:["As a punishment for guests","To cover the lost revenue from a room that can no longer be resold","To fund hotel renovations","Because OTAs require it for all bookings"],a:1,
+ex:"Late cancellation means the hotel can't resell the room at last minute. Charging first night = partial compensation for the lost revenue and operational costs already incurred."},
+{q:"What does 'cancel before 2pm on the day of arrival' mean?",clue:"💡 There's a specific time window...",
+opts:["Cancel any time on arrival day, even at midnight","Cancel before 2pm on arrival day for no charge; after 2pm, a penalty applies","Cancel 2 days before arrival","Cancel before 2pm, 30 days in advance"],a:1,
+ex:"Many hotels allow same-day cancellation before a specific time (often 2–4pm). After this cutoff, rooms are typically prepared and held, making the room unsellable — hence penalties."}
+]},
+
+{day:16,theme:"Inventory & Channel Management",emoji:"🔄",zone:2,zoneLabel:"Intermediate Zone",
+intro:"Day 16! Inventory management keeps rooms from being double-booked across all channels. Critical operational knowledge.",
+keyTerms:[["Allotment","Block of rooms allocated to a specific OTA"],["Stop Sell","Blocking all online sales — usually when full"],["Channel Manager","Software syncing rates/rooms across all OTAs simultaneously"]],
+questions:[
+{q:"What is a hotel 'allotment' in OTA terms?",clue:"💡 The hotel reserves a specific number of rooms for the OTA...",
+opts:["Total number of hotel rooms","Block of rooms specifically allocated and guaranteed to an OTA","Monthly revenue allocation","Commission percentage"],a:1,
+ex:"Allotment = a dedicated block of rooms reserved for an OTA to sell. E.g., 'Agoda has 20 allotment rooms.' Ensures availability but requires management."},
+{q:"What does 'Stop Sell' mean on an OTA?",clue:"💡 No more rooms to sell — like a red light...",
+opts:["The hotel is stopping operations permanently","Blocking online bookings — typically because the hotel is fully booked","A promotion that has ended","Stopping sales to one specific OTA"],a:1,
+ex:"Stop Sell = close availability on the OTA. Hotels do this when they're full, during maintenance, or when managing specific booking channels. Usually set via the extranet or channel manager."},
+{q:"What is a 'Channel Manager'?",clue:"💡 Managing 10 OTAs manually is impossible — this software does it...",
+opts:["A hotel employee who manages guest channels on TV","Software that syncs room rates and availability across all OTAs simultaneously","A software for managing hotel restaurants","A person at the OTA who manages hotel relationships"],a:1,
+ex:"Channel Manager (e.g., SiteMinder, Cloudbeds) automatically pushes rate and availability changes to all OTAs at once — preventing overbooking and saving hours of manual work."},
+{q:"What is 'overbooking' and why is it risky?",clue:"💡 More bookings than rooms = a very unhappy guest...",
+opts:["Booking too many OTA channels","Accepting more reservations than available rooms — risking turning guests away","Overcharging guests for rooms","Booking a room twice at the same price"],a:1,
+ex:"Overbooking happens when multiple channels sell the same room (without a channel manager to sync). Result: a confirmed guest arrives and has no room — a PR disaster."},
+{q:"'Walking a guest' means?",clue:"💡 The hotel is full but the guest has a confirmed booking...",
+opts:["Taking a guest on a hotel tour","Relocating an overbooked guest to another hotel at the hotel's expense","A guest who walks in without a reservation","Showing a guest to their room"],a:1,
+ex:"'Walking' a guest = the hotel is overbooked, so the guest with a confirmed reservation is sent to a comparable (or better) nearby hotel — hotel pays for the first night. Very costly and embarrassing."}
+]},
+
+{day:17,theme:"Booking Patterns & Behavior",emoji:"🔍",zone:2,zoneLabel:"Intermediate Zone",
+intro:"Day 17! Understanding HOW and WHEN guests book helps you advise hotel partners on strategy and promotions.",
+keyTerms:[["Booking Window","Time between booking date and arrival date"],["Lead Time","Days between when a booking is made and arrival"],["Pace","Booking rate compared to same period last year"]],
+questions:[
+{q:"What is a 'booking window'?",clue:"💡 It measures how far in advance guests plan...",
+opts:["The time to complete the check-in process","The number of days between when a booking is made and when the guest arrives","The cancellation deadline window","The hours the hotel accepts new bookings"],a:1,
+ex:"Booking window = lead time = days between booking date and arrival. A 60-day booking window means the guest booked 2 months before staying. Varies hugely by market and segment."},
+{q:"Business travelers typically have which booking pattern?",clue:"💡 Work plans can change quickly...",
+opts:["Book 3–6 months in advance","Always book through group travel desks","Book last-minute, often within 1–7 days of arrival","Never use OTAs"],a:2,
+ex:"Business travelers book close to travel dates — work schedules change. They prioritize location, flexibility (free cancellation), and Wi-Fi over price. Short booking windows."},
+{q:"Leisure travelers on holiday tend to book?",clue:"💡 Family holidays need more planning...",
+opts:["Day before arrival","1–3 hours before check-in","Weeks or months in advance, especially for peak season travel","Only through travel agents"],a:2,
+ex:"Leisure travelers plan ahead — especially for school holidays, peak seasons, or special destinations. Long booking windows = hotels can forecast demand and optimize pricing."},
+{q:"What does hotel 'pace' mean?",clue:"💡 Are bookings coming in faster or slower than expected?",
+opts:["How fast the hotel's Wi-Fi runs","Comparison of current booking velocity to the same period last year","The speed of check-in at reception","Room cleaning speed"],a:1,
+ex:"Pace = booking velocity vs prior year same period. 'Ahead of pace' = more bookings than expected (good). 'Behind pace' = slower than last year (may need promotion). Critical for revenue managers."},
+{q:"A hotel has a 3-day booking window average. This suggests its guests are mostly?",clue:"💡 Very short lead times = spontaneous or last-minute travelers...",
+opts:["Family vacation travelers planning months ahead","International tourists with complex itineraries","Last-minute or impulse bookers — possibly domestic or business travelers","Group and conference bookings"],a:2,
+ex:"3-day average booking window = mostly last-minute bookings. Likely domestic travelers or business guests. Strategy: ensure real-time availability and last-minute deals on OTAs."}
+]},
+
+{day:18,theme:"Reviews & Online Reputation",emoji:"⭐📝",zone:2,zoneLabel:"Intermediate Zone",
+intro:"Day 18! Guest reviews are now one of the most powerful forces in hospitality. They affect OTA ranking AND bookings.",
+keyTerms:[["Review Score","Average guest satisfaction rating post-stay"],["Verified Review","Review submitted by a confirmed, stayed guest"],["Response Rate","% of reviews a hotel publicly responds to"]],
+questions:[
+{q:"Why do guest review scores matter so much on OTAs?",clue:"💡 Reviews influence both search ranking AND guest decisions...",
+opts:["They only matter for star rating classification","They affect OTA search ranking, trust, conversion rate, and pricing power","Reviews are only read by the hotel staff","They are only important for luxury hotels"],a:1,
+ex:"Reviews impact: (1) OTA algorithm ranking, (2) traveler trust, (3) conversion rate (more bookings), and (4) ability to charge premium rates. A 0.5 point improvement can drive significant revenue growth."},
+{q:"What does 'verified review' mean on Agoda?",clue:"💡 The review comes from someone who actually stayed...",
+opts:["A review from a famous travel blogger","A review confirmed by the government","A review submitted only by guests who completed a stay, verified via booking record","A review with a photo attached"],a:2,
+ex:"Verified reviews = only guests who actually stayed and completed a booking can submit them. This prevents fake reviews and ensures authenticity. Agoda links reviews to confirmed reservations."},
+{q:"A hotel receives a negative review. Best practice for the hotel is?",clue:"💡 Future guests read both the review AND the hotel's response...",
+opts:["Ignore it and hope no one reads it","Flag it for deletion","Report the guest to authorities","Respond professionally, acknowledge feedback, and explain improvements made"],a:3,
+ex:"Public responses show future guests the hotel cares and is professional. A well-handled negative review can actually build trust. Ignoring reviews signals indifference."},
+{q:"Review manipulation (e.g., writing fake reviews) is?",clue:"💡 Agoda and all major OTAs have strict policies on this...",
+opts:["Acceptable if done discreetly","A common industry practice","Strictly against OTA policies and harms trust","Only prohibited for 5-star hotels"],a:2,
+ex:"Fake reviews violate OTA terms, destroy guest trust, and can result in listing removal. Agoda uses fraud detection to identify manipulation. Help partners grow reviews legitimately."},
+{q:"A hotel's review score drops from 8.5 to 7.8 over 6 months. Your advice as Market Manager?",clue:"💡 Declining reviews signal operational or quality issues...",
+opts:["Nothing — scores fluctuate naturally","Immediately raise rates to compensate","Investigate root causes, review common feedback themes, and help hotel create action plan","Remove the hotel from Agoda temporarily"],a:2,
+ex:"Declining scores need investigation: read common complaints (room cleanliness, service speed, Wi-Fi). Work with hotel partner to identify and fix root causes. Offer resources and data."}
+]},
+
+{day:19,theme:"OTA Listing Quality & Content",emoji:"📸",zone:2,zoneLabel:"Intermediate Zone",
+intro:"Day 19! Great content = more clicks = more bookings. Poor photos and descriptions cost hotels real money.",
+keyTerms:[["Content Score","OTA rating of listing completeness and quality"],["CTR","Click-Through Rate — % who click after seeing listing"],["Conversion Rate","% of listing viewers who complete a booking"]],
+questions:[
+{q:"Why do professional photos matter so much on OTA listings?",clue:"💡 Travelers judge a hotel in seconds before deciding to click...",
+opts:["They are required by law","Professional photos drive higher click-through rates and bookings","Photos have no impact on bookings","Only room photos matter — exterior photos are unnecessary"],a:1,
+ex:"Photos are the #1 conversion driver. Listings with 20+ professional photos get dramatically more clicks and bookings. Great photos = visual proof of quality = guest confidence."},
+{q:"Agoda recommends hotels have at least how many photos?",clue:"💡 The more quality photos, the more complete the listing...",
+opts:["3–5 photos","5–10 photos","20+ professional, high-quality photos","Just 1 hero image"],a:2,
+ex:"Agoda recommends 20+ photos covering: exterior, lobby, rooms (each type), bathrooms, pool, dining, and special features. More images = higher content score = better ranking."},
+{q:"What information should a hotel's description highlight?",clue:"💡 Help guests understand WHY they should choose this hotel...",
+opts:["The hotel owner's biography","Unique selling points, location benefits, amenities, nearby attractions, and what makes it special","Only the price and room count","A list of all hotel rules"],a:1,
+ex:"Descriptions should sell — unique features, location proximity to attractions, special amenities (rooftop pool, private beach, award-winning spa). This differentiates from competitors."},
+{q:"What is a hotel's 'content score' on Agoda?",clue:"💡 Agoda grades how complete and quality your listing is...",
+opts:["The hotel's overall review score from guests","Agoda's rating of listing completeness (photos, description, amenities, policies)","Monthly booking volume","The hotel's star rating"],a:1,
+ex:"Content score measures listing completeness: photos, description quality, amenity details, cancellation policy, check-in info, etc. Higher score = better ranking in Agoda search."},
+{q:"A hotel with excellent reviews but poor photos is likely to?",clue:"💡 Great reputation, poor first impression...",
+opts:["Outperform all competitors","Lose bookings to visually appealing competitors despite being a good hotel","Have no impact on bookings — reviews are all that matter","Receive a penalty from Agoda"],a:1,
+ex:"Poor photos = low CTR (fewer people click). Even with great reviews, if travelers don't click through to see them, the hotel loses. Photos are the first impression — make them count."}
+]},
+
+{day:20,theme:"OTA Search Ranking",emoji:"🔎",zone:2,zoneLabel:"Intermediate Zone",
+intro:"Day 20! How does Agoda decide which hotels appear first in search? Understanding the algorithm helps partners.",
+keyTerms:[["Search Ranking","Order hotels appear in OTA search results"],["Conversion Rate","% of views that become bookings — a key ranking signal"],["Visibility","How prominently a hotel appears in OTA search"]],
+questions:[
+{q:"What determines a hotel's position in OTA search results?",clue:"💡 Multiple factors combine — there's no single magic answer...",
+opts:["Only the hotel's star rating","Only the price — cheapest always ranks first","Algorithm combining: review score, conversion rate, price competitiveness, content quality, and commercial factors","Alphabetical order by hotel name"],a:2,
+ex:"OTA ranking algorithms weigh multiple factors: review score, pricing competitiveness, conversion rate, content completeness, cancellation policy, and sometimes commercial agreements."},
+{q:"A hotel improves its review score from 7.5 to 8.8. What likely happens to its OTA ranking?",clue:"💡 Better guest satisfaction = algorithm reward...",
+opts:["Nothing changes in ranking","Ranking may decrease — lower scores attract budget travelers","Ranking likely improves — reviews are a key positive signal","The hotel pays less commission"],a:2,
+ex:"Higher review scores are a strong positive ranking signal. Agoda's algorithm favors hotels guests love — it increases trust in Agoda's recommendations, driving more bookings."},
+{q:"What is 'conversion rate' in OTA context?",clue:"💡 How many lookers become bookers?",
+opts:["Number of guests checking in per day","% of people who view a listing and then complete a booking","The rate at which guests convert their currency","How fast guests complete the booking form"],a:1,
+ex:"Conversion rate = bookings ÷ listing views × 100%. A hotel with 2% CVR books 2 out of every 100 viewers. Higher CVR signals relevance to guests — OTAs reward it with better ranking."},
+{q:"Which action would MOST LIKELY improve a hotel's OTA ranking?",clue:"💡 Think comprehensive improvement — not just one thing...",
+opts:["Removing the hotel from all competitors' platforms","Improving photos, responding to reviews, ensuring price competitiveness, and reducing restrictions","Only lowering the nightly rate","Changing the hotel name"],a:1,
+ex:"Holistic improvement drives ranking: better content = higher CTR, better reviews = trust signals, competitive pricing = more bookings, flexible policies = broader appeal. All factors compound."},
+{q:"What does 'Sponsored' placement mean on OTA listings?",clue:"💡 Hotels pay extra for better visibility...",
+opts:["A government-approved hotel","A hotel that paid for a featured/priority position in search results","A hotel review written by a celebrity","A free service Agoda provides to all partners"],a:1,
+ex:"Sponsored listings = hotels pay for priority placement in search results — appearing at the top before organic rankings. A paid visibility boost. Hotels use this during competitive periods."}
+]},
+
+{day:21,theme:"Distribution Channels",emoji:"🌐🔀",zone:3,zoneLabel:"Expert Zone",
+intro:"Day 21! Hotels don't sell rooms just through OTAs. Understanding the full distribution landscape makes you a strategic advisor.",
+keyTerms:[["Direct Booking","Guest books through hotel's own website/phone"],["GDS","Global Distribution System — used by travel agents"],["Distribution Mix","The blend of channels a hotel uses to sell rooms"]],
+questions:[
+{q:"What is a 'direct booking' for a hotel?",clue:"💡 No middleman — no commission...",
+opts:["Booking through an OTA app","Booking made through the hotel's own website, phone, or walk-in — no commission paid","Booking made with a tour operator","Booking made through a travel agent"],a:1,
+ex:"Direct bookings = zero commission. Hotels love them for higher margins. OTAs love commission. The battle between direct and OTA bookings is central to hotel distribution strategy."},
+{q:"GDS stands for?",clue:"💡 A large legacy technology system connecting hotels to travel agents...",
+opts:["Global Digital Services","General Distribution System","Global Distribution System","Guest Data Standard"],a:2,
+ex:"GDS (Global Distribution System) = Amadeus, Sabre, Travelport. Travel agents access hotel inventory through GDS. Used heavily for corporate travel. Separate from OTAs but complementary."},
+{q:"GDS is primarily used by?",clue:"💡 Think of corporate travel bookers, not leisure travelers...",
+opts:["Budget backpackers","Leisure tourists booking beach holidays","Corporate travel managers and traditional travel agents","Airbnb hosts"],a:2,
+ex:"GDS is the backbone of corporate and agent-booked travel. Business travelers' companies often require bookings through managed travel programs connected via GDS. OTAs focus more on leisure."},
+{q:"A hotel earns $100/room via OTA (after 20% commission) vs $120/room direct. The hotel should?",clue:"💡 Direct is more profitable — but OTAs provide volume...",
+opts:["Immediately leave all OTAs","Only use OTAs — they provide the most bookings","Balance both — OTAs provide visibility and volume, direct booking improves margins","Only use GDS for corporate travelers"],a:2,
+ex:"Optimal strategy = channel mix. OTAs provide market reach and marketing. Direct bookings offer higher margins. Smart hotels drive direct loyalty while maintaining strong OTA presence."},
+{q:"What is a hotel's 'distribution strategy'?",clue:"💡 Which channels to use and how much to rely on each...",
+opts:["The hotel's physical layout and room distribution","The plan for which booking channels to use, in what proportion, at what rates","How hotels distribute guest room keys","The schedule for cleaning rooms"],a:1,
+ex:"Distribution strategy = deliberately choosing the right mix of channels (OTAs, direct, GDS, tour operators) to maximize revenue while managing acquisition costs (commission)."}
+]},
+
+{day:22,theme:"Channel Management Technology",emoji:"💻",zone:3,zoneLabel:"Expert Zone",
+intro:"Day 22! The tech stack connecting hotels to OTAs is crucial. Understanding it helps you troubleshoot and advise partners.",
+keyTerms:[["Channel Manager","Software syncing rates/inventory across all OTAs"],["API","Application Programming Interface — how systems talk to each other"],["Two-Way Integration","Automatic sync of both rates AND reservations"]],
+questions:[
+{q:"Without a channel manager, what major risk does a hotel face?",clue:"💡 Imagine updating 10 OTAs manually, separately, one by one...",
+opts:["Hotel staff get bored","Overbooking — multiple OTAs may sell the same room simultaneously","The hotel earns too much money","Guests get better prices"],a:1,
+ex:"Without a channel manager, updating rates manually across 10+ OTAs is slow and error-prone. One room available might be sold on 3 platforms simultaneously — resulting in overbooking."},
+{q:"SiteMinder, Cloudbeds, and RateGain are examples of?",clue:"💡 These are names of technology companies serving hotels...",
+opts:["Hotel chain brands","Channel management software platforms","OTA booking engines","Revenue management systems"],a:1,
+ex:"SiteMinder, Cloudbeds, and RateGain are major channel management platforms — they connect hotels to OTAs via API, automatically syncing availability and rates in real-time."},
+{q:"What does 'API integration' mean between a hotel and Agoda?",clue:"💡 API = the language systems use to talk to each other...",
+opts:["A manual data entry process","Automatic, real-time data exchange between hotel's system and Agoda's platform","A phone call between hotel and Agoda","A monthly email of booking data"],a:1,
+ex:"API (Application Programming Interface) = the technical bridge enabling automatic data exchange. When a room is booked on Agoda, the hotel's PMS updates instantly via API. No manual work needed."},
+{q:"A hotel partner says their Agoda availability shows 0 rooms even though rooms are available. Likely cause?",clue:"💡 Think about the connection between their system and Agoda...",
+opts:["Agoda has removed the hotel","The hotel has too many rooms","Channel manager sync error or API connectivity issue","Guest reviews caused the blackout"],a:2,
+ex:"Zero availability despite open rooms = likely a channel manager or API sync error. The hotel's system isn't communicating properly with Agoda. Technical troubleshooting or Agoda's connectivity team can resolve."},
+{q:"What is a 'two-way' API integration?",clue:"💡 Data flows in BOTH directions...",
+opts:["Integration between two OTAs","System where rates/availability are pushed TO Agoda AND reservations are pulled BACK to hotel's system automatically","A backup system if the main channel manager fails","An integration requiring two people to set up"],a:1,
+ex:"Two-way integration = rates/availability flow from hotel to Agoda AND bookings flow from Agoda back to hotel's PMS automatically. Full automation. One-way only sends availability but doesn't auto-receive bookings."}
+]},
+
+{day:23,theme:"Property Management Systems",emoji:"🖥️",zone:3,zoneLabel:"Expert Zone",
+intro:"Day 23! PMS is the operating system of a hotel. Understanding it helps you speak the same language as hotel operations teams.",
+keyTerms:[["PMS","Property Management System — the hotel's core operational software"],["Opera","Leading hotel PMS used globally by large hotels"],["Night Audit","Daily end-of-day reconciliation process in hotel PMS"]],
+questions:[
+{q:"PMS stands for?",clue:"💡 It's the central software system running the hotel...",
+opts:["Price Management System","Property Management System","Profit Margin System","Partner Management Solution"],a:1,
+ex:"PMS = Property Management System. It's the hotel's core software handling reservations, check-in/out, room assignments, billing, housekeeping, and reports."},
+{q:"Which tasks does a hotel PMS handle?",clue:"💡 It manages the entire guest journey within the hotel...",
+opts:["Only room pricing","Only housekeeping schedules","Reservations, check-in/out, billing, housekeeping, and guest profiles — the full operational picture","Only OTA booking imports"],a:2,
+ex:"PMS is the hotel's operational backbone: guest reservations, room assignment, check-in/check-out, billing, housekeeping status, guest history, and management reporting."},
+{q:"Opera (by Oracle) is best described as?",clue:"💡 It's used by most major hotel chains globally...",
+opts:["A music performance venue","A budget hotel management app","The world's most widely used enterprise hotel PMS, common in 4–5 star hotels","An OTA competing with Agoda"],a:2,
+ex:"Opera by Oracle Hospitality is the dominant PMS for large hotels and chains globally. Partners using Opera typically have sophisticated tech setups and expect deep API integration."},
+{q:"Why does Agoda need to integrate with a hotel's PMS?",clue:"💡 For bookings to flow seamlessly without manual re-entry...",
+opts:["So Agoda can see the hotel's financial accounts","So Agoda bookings automatically appear in the hotel's system and room inventory updates in real-time","To control the hotel's pricing remotely","For Agoda to manage hotel staff"],a:1,
+ex:"PMS integration ensures: (1) Agoda bookings auto-populate into hotel system, (2) room inventory syncs in real-time, (3) no double bookings, (4) streamlined check-in for guests."},
+{q:"What is 'Night Audit' in hotel operations?",clue:"💡 It happens every night and resets the hotel's daily records...",
+opts:["A security guard checking the hotel at night","End-of-day PMS process that reconciles accounts, posts charges, and rolls over to the next business day","A review of negative guest comments from the night","Counting rooms each night"],a:1,
+ex:"Night Audit = daily reconciliation run in the PMS. It posts room charges, reconciles accounts, closes the business day, and generates management reports. Typically runs automatically after midnight."}
+]},
+
+{day:24,theme:"Market Segmentation",emoji:"🧩",zone:3,zoneLabel:"Expert Zone",
+intro:"Day 24! Not all guests are the same. Understanding segments helps hotels (and you) target the right travelers.",
+keyTerms:[["Leisure Traveler","Vacationer prioritizing experience and value"],["Corporate Traveler","Business traveler prioritizing location, Wi-Fi, flexibility"],["MICE","Meetings, Incentives, Conferences, and Exhibitions"]],
+questions:[
+{q:"MICE in hotel industry stands for?",clue:"💡 It's an abbreviation for a lucrative business segment...",
+opts:["Medium Independent Catering Events","Meetings, Incentives, Conferences, and Exhibitions","Mobile, Internet, Computing, Entertainment","Marketing, Innovation, Corporate Experience"],a:1,
+ex:"MICE = Meetings, Incentives, Conferences, Exhibitions. A high-value segment: large groups, multiple nights, use of function spaces, guaranteed F&B spend. Hotels actively pursue MICE business."},
+{q:"Business travelers primarily value which hotel attribute?",clue:"💡 They need to work, move fast, and may change plans...",
+opts:["Cheapest rate, no matter what","Fun activities and kids' club","Convenient location, reliable Wi-Fi, and free cancellation policy","All-inclusive food and drinks"],a:2,
+ex:"Business travelers prioritize: location near business districts/airports, fast reliable Wi-Fi, flexibility (free cancellation), and efficiency. Price matters but less than leisure travelers."},
+{q:"What is a 'corporate rate' in hotel pricing?",clue:"💡 Companies negotiate special terms for their employees...",
+opts:["The most expensive rate for VIP guests","A discounted rate negotiated by companies for their employees' regular stays","A rate only available during corporate events","The standard BAR rate for business travelers"],a:1,
+ex:"Corporate rates = negotiated discounts for companies whose employees stay frequently. E.g., Accenture negotiates $150/night at a hotel vs the BAR of $200. Drives guaranteed volume."},
+{q:"A resort with water slides, kids' club, and beach is most attractive to which segment?",clue:"💡 Think of who would most enjoy all these facilities...",
+opts:["Solo business travelers","Convention and conference groups","Families on leisure holidays","Backpackers on a budget"],a:2,
+ex:"Family leisure travelers are the target for resort amenities. Kids' club, water activities, and beach access are key decision drivers for families booking a holiday. Know your audience."},
+{q:"Why do hotels want a diverse segment mix instead of relying on just one type of guest?",clue:"💡 Putting all eggs in one basket is risky...",
+opts:["Different guests pay different rates — diversity is confusing","Diversification reduces risk — if one segment declines, others compensate and keep revenue stable","Hotels prefer only corporate guests","All segments pay exactly the same rates"],a:1,
+ex:"Revenue diversification = resilience. Hotels relying 100% on leisure suffer in off-season. Hotels over-indexed on corporate suffer on weekends. A balanced mix smooths revenue throughout the year."}
+]},
+
+{day:25,theme:"Advanced Revenue Metrics",emoji:"📊💡",zone:3,zoneLabel:"Expert Zone",
+intro:"Day 25! Beyond RevPAR — the metrics sophisticated hoteliers and revenue managers use to measure total performance.",
+keyTerms:[["TRevPAR","Total Revenue Per Available Room — all revenue streams"],["GOPPAR","Gross Operating Profit Per Available Room"],["Pick-Up","New bookings received in a given time period"]],
+questions:[
+{q:"TRevPAR differs from RevPAR in that it includes?",clue:"💡 Think beyond just rooms — hotels earn money from many places...",
+opts:["Only room revenue, more precisely calculated","All hotel revenue streams: rooms, F&B, spa, parking, events, etc.","Revenue from the top-performing rooms only","Total annual revenue per room"],a:1,
+ex:"TRevPAR = Total Revenue Per Available Room. Includes ALL revenue: rooms, food & beverage, spa, parking, meetings, and ancillary services. A more complete profitability picture."},
+{q:"GOPPAR stands for?",clue:"💡 It measures actual profit, not just revenue...",
+opts:["Gross Online Pricing Per Annual Revenue","Gross Operating Profit Per Available Room","General Operational Performance And Revenue Rating","Growth Oriented Property Pricing And Revenue"],a:1,
+ex:"GOPPAR = Gross Operating Profit Per Available Room. Unlike RevPAR (revenue), GOPPAR subtracts operating costs — it shows actual profitability. The most accurate health indicator."},
+{q:"A hotel's 'pick-up report' shows?",clue:"💡 It measures new booking activity over a period...",
+opts:["Which rooms guests most commonly select","New bookings received during a specific time window (e.g., last 7 days)","Hotels picked up by a new OTA partner","Rooms selected for cleaning today"],a:1,
+ex:"Pick-up = new bookings made in a given period. Daily pick-up reports show booking momentum. 'Good pick-up' = bookings flowing well. 'Weak pick-up' = may need rate adjustments or promotions."},
+{q:"What does hotel 'pace' tell a revenue manager?",clue:"💡 It compares current booking momentum to a reference period...",
+opts:["How fast housekeeping cleans rooms","How quickly guests check in","Booking velocity vs same period last year — ahead or behind pace","The speed of the hotel elevator"],a:2,
+ex:"Pace = comparing current forward bookings to same date-range last year (or budget). 'Ahead of pace' = more bookings than this time last year. Informs pricing and promotion decisions."},
+{q:"A hotel asks you why they should care about GOPPAR vs RevPAR. Your answer?",clue:"💡 Revenue looks good but profit tells the real story...",
+opts:["They are exactly the same metric","GOPPAR accounts for operating costs — a hotel can have high RevPAR but low GOPPAR if costs are too high, making it unprofitable","GOPPAR is easier to calculate","Only OTAs use GOPPAR"],a:1,
+ex:"Revenue is vanity, profit is sanity. A hotel can have impressive RevPAR but poor GOPPAR if labor, utilities, and F&B costs are bloated. GOPPAR = true operational health."}
+]},
+
+{day:26,theme:"Commission Models Deep Dive",emoji:"💵",zone:3,zoneLabel:"Expert Zone",
+intro:"Day 26! How money actually flows between OTAs and hotels varies by model. This is key commercial knowledge.",
+keyTerms:[["Merchant Model","OTA collects full payment, remits net to hotel"],["Agency Model","Hotel collects payment, pays commission to OTA later"],["Net Rate","Hotel rate after OTA commission is removed"]],
+questions:[
+{q:"In the Merchant Model (used by Agoda), how does payment work?",clue:"💡 Agoda collects from guests, then pays hotels...",
+opts:["Hotel collects from guest and pays Agoda commission","Agoda collects full payment from guest, retains commission, remits net amount to hotel","Hotel and Agoda split payment equally","Guest pays both hotel and Agoda separately"],a:1,
+ex:"Merchant Model: Agoda charges guest → Agoda keeps commission → Agoda remits net to hotel. Agoda controls the financial relationship. Common for prepaid bookings."},
+{q:"In the Agency Model, how does payment flow?",clue:"💡 The hotel handles money, then settles with the OTA...",
+opts:["Same as Merchant Model","Hotel collects full payment from guest, then pays commission to OTA after stay","OTA and hotel split 50/50","Guest pays a deposit to OTA, rest at hotel"],a:1,
+ex:"Agency Model: Hotel collects payment → Hotel pays agreed commission to OTA. The hotel controls the financial relationship. Common for pay-at-property bookings on Booking.com."},
+{q:"If a hotel's room rate is $100 and Agoda's commission is 20%, what is the hotel's 'net rate'?",clue:"💡 $100 minus 20%...",
+opts:["$70","$75","$80","$90"],a:2,
+ex:"Net rate = $100 – 20% ($20) = $80. The hotel receives $80 per room. This is the hotel's actual revenue. Understanding net rates is critical when advising partners on profitability."},
+{q:"'Gross rate' refers to?",clue:"💡 This is the number guests see on the OTA...",
+opts:["The hotel's internal cost of running the room","The price the guest pays — before any OTA commission deduction","The hotel's profit margin","The combined revenue from all channels"],a:1,
+ex:"Gross rate = the consumer-facing price (what the guest pays). From this, the OTA deducts its commission to determine the net amount paid to the hotel."},
+{q:"A hotel partners says: 'Our $100 rate on Agoda costs us more than our $100 rate direct.' Why is this true?",clue:"💡 Think about what the hotel pays for each channel...",
+opts:["It's not true — rates are the same profit either way","Direct bookings require more staff to process","The Agoda booking has a 15–20% commission deducted, reducing net to hotel; direct has zero commission","Agoda charges a monthly platform fee on top"],a:2,
+ex:"$100 on Agoda at 20% commission = $80 net to hotel. $100 direct = $100 net (minus minor payment processing of ~1-3%). OTA provides reach & marketing in exchange for commission — a key partner education point."}
+]},
+
+{day:27,theme:"Metasearch & Direct Strategy",emoji:"🔍💻",zone:3,zoneLabel:"Expert Zone",
+intro:"Day 27! Metasearch engines like Google Hotels and Trivago are where OTAs compete against each other AND against direct bookings.",
+keyTerms:[["Metasearch","Price comparison engine redirecting to OTAs or direct",""],["CPC","Cost Per Click — metasearch advertising model"],["Google Hotel Ads","Google's metasearch product showing hotel prices in search"]],
+questions:[
+{q:"What is a metasearch engine in the travel context?",clue:"💡 It compares prices from many sources but doesn't take the booking directly...",
+opts:["An OTA that specializes in budget hotels","A search engine that compares hotel prices across OTAs and direct sites, then redirects to book","A hotel loyalty program","A travel blog with hotel recommendations"],a:1,
+ex:"Metasearch (Google Hotels, Trivago, Kayak, TripAdvisor) aggregates hotel prices from all sources, lets travelers compare, then redirects to the chosen platform to complete the booking."},
+{q:"Trivago is owned by which company?",clue:"💡 Think of the major OTA group based in Seattle...",
+opts:["Booking Holdings","Trip.com Group","Expedia Group","Google"],a:2,
+ex:"Trivago is owned by Expedia Group — one of the world's largest OTA groups. Interesting that Expedia owns a metasearch that compares Expedia against competitors!"},
+{q:"CPC in metasearch advertising means?",clue:"💡 You pay only when someone actually clicks your listing...",
+opts:["Commission Per Cancellation","Cost Per Click — advertiser pays each time a user clicks their listing","Complete Purchase Confirmation","Customer Profile Creation"],a:1,
+ex:"CPC = Cost Per Click. Hotels/OTAs bid to appear prominently on metasearch. They pay a fee every time a traveler clicks their price option. Performance-based — pay for traffic, not just impressions."},
+{q:"Google Hotel Ads helps hotels because?",clue:"💡 Hotels can appear directly in Google search results with their own prices...",
+opts:["Google only shows direct booking options, removing OTAs","Hotels can show their direct booking rate alongside OTA rates in Google search — potentially winning clicks without paying OTA commission","Google gives hotels free accommodation for testing","Google automatically creates hotel listings"],a:1,
+ex:"Google Hotel Ads lets hotels compete in Google search by showing direct booking rates vs OTA rates. If direct rate matches OTA rate, some guests choose direct — saving the hotel commission."},
+{q:"A hotel asks if they should invest in metasearch marketing. Your consideration?",clue:"💡 Weigh cost of metasearch vs commission saved...",
+opts:["Never — OTAs provide all necessary visibility","Always — metasearch is always profitable","Depends on CPC bid cost vs commission saved per direct booking — requires ROI analysis","Metasearch is free so always use it"],a:2,
+ex:"Metasearch ROI = (commission saved per direct booking won) – (CPC cost per click). If winning a $150/night booking directly costs $15 in clicks but saves $30 in commission, it's worth it. Context-dependent."}
+]},
+
+{day:28,theme:"OTA Analytics & Data",emoji:"📊🔬",zone:3,zoneLabel:"Expert Zone",
+intro:"Day 28! Data is your superpower. Understanding OTA analytics helps you advise partners and hit your own targets.",
+keyTerms:[["Impression","Number of times a listing appeared in search results"],["CVR","Conversion Rate — bookings ÷ views"],["Benchmark","Industry average to compare hotel performance against"]],
+questions:[
+{q:"An OTA 'impression' means?",clue:"💡 Before a click, there's a view...",
+opts:["A guest's first impression of the hotel room","The number of times a hotel's listing appeared in search results","A review mentioning a strong impression","A hotel photo that impresses guests"],a:1,
+ex:"Impression = each time a listing is displayed in search results. Low impressions = visibility problem. High impressions + low clicks = CTR problem. High clicks + low bookings = CVR problem."},
+{q:"Conversion Rate (CVR) for OTA hotel listings is calculated as?",clue:"💡 How many viewers become actual bookers?",
+opts:["Revenue ÷ Number of rooms","Bookings ÷ Number of listing views × 100","Clicks ÷ Impressions × 100","Positive reviews ÷ Total reviews"],a:1,
+ex:"CVR = Bookings ÷ Views × 100%. Industry benchmark is ~2–5% for hotels. Low CVR might mean: unappealing photos, high prices vs competitors, restrictive policies, or negative reviews."},
+{q:"A hotel has 10,000 impressions, 500 clicks, and 15 bookings. What is its Click-Through Rate (CTR)?",clue:"💡 CTR = Clicks ÷ Impressions × 100",
+opts:["0.15%","3%","5%","15%"],a:2,
+ex:"CTR = 500 ÷ 10,000 × 100 = 5%. A reasonable CTR. The booking CVR is 15 ÷ 500 = 3%. Both metrics reveal different problems — visibility vs conversion."},
+{q:"A hotel's Agoda data shows high impressions but very low click-throughs. Most likely cause?",clue:"💡 People see the listing but don't click — what would stop them?",
+opts:["The hotel is overbooked","The hotel's photo, title, or price in the search result isn't compelling enough to earn a click","The hotel has too many rooms","Agoda has a technical error"],a:1,
+ex:"Low CTR despite high impressions = the listing thumbnail (hero photo, name, star rating, price, review score) isn't attractive enough. Improving photos or price competitiveness usually fixes this."},
+{q:"What does 'benchmark data' from Agoda help a hotel understand?",clue:"💡 Context makes data meaningful...",
+opts:["How to renovate their rooms","How their ADR, occupancy, and review score compare to similar hotels in their market","How many staff members to hire","What food to serve at breakfast"],a:1,
+ex:"Benchmarking shows hotels where they stand vs. the market. 'Your ADR is $90 vs CompSet average $120' is more actionable than raw ADR alone. Agoda provides this data through partner insights tools."}
+]},
+
+{day:29,theme:"Partner Relations & Your Role",emoji:"🤝💼",zone:3,zoneLabel:"Expert Zone",
+intro:"Day 29! You're almost a master! Today is about YOUR role — how to be an exceptional partner manager at Agoda.",
+keyTerms:[["Market Manager","Agoda's partner-facing role managing hotel relationships"],["KPI","Key Performance Indicator — metric to measure success"],["Business Review","Periodic strategic meeting between Agoda and hotel partner"]],
+questions:[
+{q:"As a Market Manager at Agoda, your primary responsibility is?",clue:"💡 You're the bridge between Agoda and hotel partners...",
+opts:["Writing code for Agoda's website","Managing Agoda's social media","Building and managing hotel partner relationships to grow bookings and mutual performance","Designing hotel rooms"],a:2,
+ex:"Market Manager = relationship builder. You grow hotel partners' performance on Agoda (bookings, RevPAR, content score, reviews) while achieving Agoda's revenue and partner satisfaction targets."},
+{q:"A 'Business Review' meeting with a hotel partner typically covers?",clue:"💡 Think: how are we both doing, and what can we do better?",
+opts:["The hotel's HR and recruitment process","The hotel's food and beverage menu planning","Performance analysis (bookings, RevPAR, reviews), opportunities (promotions, content), and strategic plan for next quarter","Social events and networking"],a:2,
+ex:"Business Reviews = structured quarterly meetings reviewing: booking performance vs targets, market trends, competitor positioning, upcoming opportunities (events, promotions), and action plans. High-value partner time."},
+{q:"KPI stands for?",clue:"💡 It's how you measure whether you're succeeding...",
+opts:["Key Partner Initiative","Key Performance Indicator — the metrics used to measure success","Knowledge and Product Index","Key Pricing Information"],a:1,
+ex:"KPI = Key Performance Indicator. For a Market Manager: hotel partner revenue growth, number of active partners, content score improvement, promotion adoption rate, review score improvement across portfolio."},
+{q:"A hotel partner is unhappy because their competitor has better visibility on Agoda. How do you respond?",clue:"💡 Use data and actionable recommendations, not excuses...",
+opts:["Tell them there's nothing you can do","Apologize and reduce their commission","Analyze the competitor's advantages (content, price, reviews) and build a specific action plan for the partner to close the gap","Transfer the partner to another manager"],a:2,
+ex:"Data-driven empathy + action plan = great Market Manager. Show the gap (content score, pricing, review score), explain why it matters to ranking, and provide specific steps to improve. Partners value insight and help."},
+{q:"Building a 'strategic partnership' vs a 'transactional' relationship with a hotel means?",clue:"💡 Strategy = long-term value, transactional = just day-to-day tasks...",
+opts:["Strategic = charge higher commission","Strategic = focus on shared long-term growth goals, regular business reviews, joint planning — not just processing requests","Transactional = the better relationship model","Strategic = only deal with 5-star hotels"],a:1,
+ex:"Strategic partnerships = shared goals, trust, joint planning, mutual investment. Hotels that see Agoda as a strategic partner are more likely to offer exclusive deals, better content, and priority cooperation. Win-win."}
+]},
+
+{day:30,theme:"Mastery Review — OTA Expert",emoji:"🏆",zone:3,zoneLabel:"Expert Zone",
+intro:"Day 30 — THE FINAL DAY! You've covered 30 topics. Now let's confirm you're truly ready to talk OTA with any client.",
+keyTerms:[["The Golden Triangle","Occupancy + ADR + RevPAR — the three core hotel metrics"],["Distribution Mix","The blend of OTA, direct, GDS, and other channels"],["Partner Success","When hotels thrive, Agoda thrives — a true win-win"]],
+questions:[
+{q:"The 'golden triangle' of hotel performance metrics is?",clue:"💡 Three metrics that together tell the full revenue story...",
+opts:["Stars + Reviews + Price","Revenue + Profit + Cost","Occupancy Rate + ADR + RevPAR","Bookings + Cancellations + No-Shows"],a:2,
+ex:"The golden triangle: Occupancy Rate (how full) + ADR (how much per room) + RevPAR (combined performance). Master these three and you can discuss hotel performance with any GM or revenue manager."},
+{q:"A hotel's RevPAR increased 15% year-over-year. What could have caused this?",clue:"💡 RevPAR = ADR × Occupancy — both can drive it...",
+opts:["Only possible if they lowered prices drastically","Either ADR increased, occupancy increased, or both improved simultaneously","Only possible if they added new rooms","RevPAR can't increase year-over-year"],a:1,
+ex:"RevPAR growth could come from: raising rates (ADR↑ with stable occupancy), filling more rooms (occupancy↑ with stable ADR), or ideally both. Strong RevPAR growth = hotel is performing exceptionally."},
+{q:"A new hotel partner asks: 'Why should I be on Agoda instead of only direct bookings?' Your best answer?",clue:"💡 Think about what OTAs uniquely provide...",
+opts:["You should only use Agoda — direct bookings don't exist","Agoda provides global reach, marketing technology, millions of travelers, data insights, and established trust — hard to replicate with direct channels alone","Agoda is cheaper than direct bookings","Hotels on Agoda don't need to do any other marketing"],a:1,
+ex:"Agoda provides: global audience of millions, powerful search marketing, brand trust, data insights, promotional tools, and multilingual support. The commission buys these capabilities — often cheaper than building them yourself."},
+{q:"Which scenario represents the BEST hotel performance?",clue:"💡 You want high occupancy AND high rate simultaneously...",
+opts:["100% occupancy at $50 ADR","50% occupancy at $300 ADR","82% occupancy at $180 ADR (RevPAR $147.60)","70% occupancy at $120 ADR"],a:2,
+ex:"RevPAR scores: A) $50, B) $150, C) $147.60, D) $84. Option B seems high but very low occupancy. Option C at 82% × $180 is excellent — balancing volume AND value. Compare total revenue, not just rate."},
+{q:"After 30 days of learning, what is the most important insight about OTA success?",clue:"💡 It's not just about technology or metrics — it's about relationships and mutual growth...",
+opts:["The cheapest hotel always wins on OTAs","Only 5-star hotels succeed on OTAs","When hotel partners succeed (more bookings, better reviews, higher RevPAR), Agoda succeeds — it's a genuinely mutual relationship","Only commission rates matter for hotel success"],a:2,
+ex:"🏆 MASTERY INSIGHT: OTA success is win-win. When you help hotel partners improve their content, pricing, reviews, and strategy — they earn more, Agoda earns more, guests get better experiences. Your job = enable partner success. Congratulations on completing the 30-day loop!"}
+]},
+
+// ═══════════════════════════════════════════════════════════════
+//  ELITE ZONE — Days 31–33: Thai Hotel Partner Situational Mastery
+// ═══════════════════════════════════════════════════════════════
+{day:31,theme:"Thai Hotel Crisis Management",emoji:"🚨",zone:4,zoneLabel:"Elite Zone",
+intro:"Day 31 — Welcome to the Elite Zone. These five scenarios mirror real situations faced by Agoda Market Managers with top Thai hotel partners. Think strategically, not just reactively.",
+keyTerms:[["Stakeholder De-escalation","Calming an executive-level crisis while protecting relationship and finding concrete solutions"],["Commission Evasion","Contractual violation requiring evidence-based diplomatic confrontation and formal escalation"],["Overbooking Protocol","Emergency response plan when rooms are sold beyond capacity across multiple channels"]],
+questions:[
+{q:"The GM of Bangkok's top riverside hotel calls you personally — their Presidential Suite shows ฿8,500 on a competitor OTA but ฿12,000 on Agoda. He is threatening to pull ALL inventory within 2 hours. What is your immediate first move?",
+clue:"💡 In a senior stakeholder crisis: Recognize the issue, Respond with urgency and a clear process, commit to Resolve — but never promise what you cannot guarantee immediately.",
+opts:["Immediately match the competitor OTA price on Agoda to neutralize the situation right now","Validate the discrepancy with evidence, acknowledge urgency, escalate internally to the rate integrity team within 15 minutes, commit to a 24-hour resolution timeline, and offer an interim visibility boost as a goodwill gesture","Explain calmly that rate parity enforcement is the hotel's own contractual responsibility","Suggest the GM contact the competing OTA directly to resolve the rate discrepancy themselves"],
+a:1,
+ex:"In a high-stakes crisis with a senior hotelier, apply the 3Rs: Recognize the issue immediately without minimizing it; Respond with a concrete action process ('I am escalating this in the next 15 minutes and will update you by 4pm'); and commit to Resolve with accountability and a clear timeline. You gather evidence — screenshots with timestamps and booking flow data — and escalate to Agoda's rate integrity team while documenting everything. An interim visibility boost (e.g., a featured placement for the next 48 hours) signals tangible support beyond words. Never lower your rate immediately without investigation — it could be a display glitch, a promotional code error, or a genuine violation by the competitor. Never blame the hotel, and never promise an outcome you cannot control. Your role is to be the hotel's trusted ally in the crisis, not a bystander. This response prevents panic inventory closure, demonstrates market manager competence under pressure, and preserves the relationship's long-term foundation."},
+{q:"Five 1-star reviews appear on a top Phuket resort's Agoda listing in one week — all mentioning taxi scams happening outside the hotel entrance. The GM demands you remove all five. The hotel's score drops from 8.9 to 8.2. What is the correct approach?",
+clue:"💡 Verified reviews can only be removed for specific policy violations — not simply because the hotel is unhappy. But there is still significant value you can deliver to help them recover.",
+opts:["Remove all five reviews immediately — the hotel is a key partner and their request takes priority","Explain Agoda's review removal policy, investigate each review against the criteria, advise the hotel to respond publicly and professionally, and work with them on an operational plan to address the root cause","Agree the reviews are clearly unfair and escalate aggressively to your manager to force removal","Tell the hotel that review scores recover naturally over time and there is nothing you need to do now"],
+a:1,
+ex:"Verified reviews can only be removed if they violate Agoda's content policy — for example, if they are demonstrably fake, contain offensive language, or are entirely irrelevant to the stay experience. Taxi scams in front of the hotel, while genuinely unfair to the property, represent a real part of the guest arrival experience and typically do not qualify for automatic removal. Your structured response: First, review each of the five submissions against Agoda's content policy — if any are demonstrably fabricated (e.g., a user who never completed a stay, duplicate language suggesting a coordinated attack), escalate through the correct fraud reporting channel with supporting evidence. Second, coach the hotel on writing a professional, empathetic, and specific public response for each review — acknowledging the issue, detailing the corrective action already taken (e.g., 'We have established a licensed taxi desk at our entrance and partnered with BKK Taxis for metered pickup'). Third, activate Agoda's review solicitation tools to help the hotel generate fresh verified positive reviews from recent guests, diluting the score impact over 4-6 weeks. Fourth, advise operationally: install a hotel-managed transportation desk, add arrival safety information to booking confirmation emails, and brief bell staff to intercept approaching unofficial taxis. Attempting to remove valid reviews violates Agoda's integrity with guests, destroys platform trust, and would seriously damage your own credibility as a trustworthy partner-facing representative."},
+{q:"Your top three Thai hotel partners (same ownership group, representing 40% of your personal portfolio revenue) demand a 3% commission reduction or they will move all properties exclusively to Booking.com. You have a joint meeting with the group Revenue Director tomorrow morning. How do you prepare and what is your primary strategy?",
+clue:"💡 Never negotiate from panic or from ignorance of your own value. Preparation time is more valuable than reaction time. Data that makes the alternative look incomplete is your strongest tool.",
+opts:["Email the Revenue Director tonight agreeing to a 3% reduction — losing 40% of portfolio revenue is catastrophic and must be prevented immediately at any cost","Refuse firmly in the meeting and remind them that Agoda's commission structure is a non-negotiable global policy","Prepare comprehensive performance analytics showing Agoda's unique value across feeder markets and booking volume, propose a structured joint business review, explore value-add alternatives to direct commission reduction, and escalate commercially to your line manager while creating space to find a creative solution","Subtly threaten reduced ranking and promotional exclusion if they proceed with moving to Booking.com exclusively"],
+a:2,
+ex:"This is a high-stakes commercial negotiation and preparation quality determines the outcome. The night before the meeting: Pull the full portfolio analytics — total booking value over the past 12 months, nationality breakdown of bookings (especially unique Asian markets such as Chinese, Korean, Indian, and Taiwanese travelers that direct channels or Booking.com cannot access as efficiently), ADR achieved on Agoda versus their reported direct booking average, peak period contribution during Songkran and high season, and Agoda's estimated marketing investment in their target origin markets. Research what Booking.com has genuinely offered them — is the 3% commission reduction their actual bottom line, or an opening bid in a negotiation? In the meeting, open by acknowledging their growth goals and validating the partnership's importance before presenting data: 'Agoda delivers 31% of your Korean guests and 44% of your Chinese bookings — these are segments your direct channel would require millions of baht in market-specific acquisition costs to replace.' Never agree to a blanket commission reduction without commercial team approval — it sets an irreversible precedent across your entire portfolio. Instead, propose alternatives that address their profitability goal: volume-based incentives tied to booking milestones, featured placement partnerships, access to exclusive promotional programs, or a joint business review with a 90-day performance target. Escalate to your commercial manager and potentially invite them to the meeting. The goal is to buy constructive time, demonstrate irreplaceable and data-backed value, and find a creative solution that meets their margin goal without undermining your commission structure."},
+{q:"During Songkran — Thailand's biggest travel festival — a top Bangkok hotel's channel manager crashes. Their system is still showing 50 rooms as available on Agoda, but those rooms are already sold through direct and other OTA channels. You receive an alert: 30 new Agoda bookings have been confirmed in the past two hours. What is your immediate action plan?",
+clue:"💡 Overbooking during Thailand's peak national holiday is a four-alarm reputational emergency. Speed, proactive guest communication, and a relocation plan must happen before anyone boards a plane.",
+opts:["Let all 30 bookings process normally — the hotel is experienced and will manage any overbooking on arrival as it always does","Immediately coordinate an emergency stop sell on Agoda, verify the actual room inventory with the hotel's front office, identify which bookings can be honored, and proactively initiate guest communication and relocation planning before any guest travels to Bangkok","Cancel all 30 Agoda bookings immediately without any prior guest communication","First contact Booking.com to determine if they have the same overbooking exposure before taking any action on Agoda's side"],
+a:1,
+ex:"Overbooking during Songkran is a maximum-severity crisis. Every minute of delay increases the risk of guests arriving at a fully sold property during the most competitive accommodation period of the Thai calendar. Immediate response sequence: First (within 5 minutes), contact the hotel's front office manager directly — not the GM's assistant — to implement emergency stop sell on Agoda's extranet, or execute it yourself if your market manager access permits. Second, get a definitive accurate count of truly available rooms from the hotel's front desk system, not the channel manager or reservations team, as only front office can confirm physical availability. Third, triage the 30 new bookings chronologically — the most recently confirmed bookings are typically the ones displaced, as they represent inventory that was already allocated. Fourth, immediately flag this to Agoda's Customer Experience team with the full booking list, so they can initiate proactive contact with potentially affected guests — ideally before any guest checks in for a Songkran flight. Fifth, source equivalent or superior accommodation within the same neighborhood at negotiated emergency rates using your hotel partner network, and prepare an offer that compensates guests generously for the disruption. Sixth, document every decision, communication, and action from this moment forward for the post-incident review and any financial liability determination. Guests who receive advance notice and a genuine quality alternative will forgive; guests who arrive in Bangkok at midnight on Songkran to find no room will share that story with thousands of followers and potentially the media."},
+{q:"You discover that a luxury Chiang Mai partner has been actively displaying Agoda Cash promotions on their listing to attract bookings, while collecting undisclosed side payments from some guests at checkout to bypass the commission on those transactions. This is a clear contractual violation. How do you handle it?",
+clue:"💡 In Thailand's relationship-driven hotel culture, HOW you handle a confrontation matters as much as the confrontation itself. Evidence must come first, and dialogue must come before formal escalation wherever possible.",
+opts:["Ignore the violation — confronting your highest-performing partner risks the relationship and your monthly revenue numbers","Report it immediately and directly to Agoda's legal team without speaking to the hotel first","Gather comprehensive evidence, request a private in-person meeting with the GM or owner, present the discrepancies professionally without accusatory language to allow them to explain, state the contractual violation and consequences clearly, set a specific deadline to rectify, and escalate through formal compliance channels with complete documentation","Send an anonymized warning to all hotels in your portfolio using this case as an example of what not to do"],
+a:2,
+ex:"Commission evasion is a serious breach of the partner agreement, but in Thailand's relationship-driven hotel culture — where face-saving is culturally essential and the Chiang Mai hotel community is tightly networked — how you conduct the confrontation will determine whether you resolve it professionally or create a lasting reputational problem for yourself and Agoda. Step one is building an evidence base before any conversation: compile booking records showing Agoda Cash promotions were active during the relevant period, cross-reference with payment reports showing discrepancies between expected and received settlement amounts, and document the pattern with specific dates and amounts. With solid evidence in hand, request a private, in-person meeting — not a phone call or email — with the GM or ownership directly. In Thai business culture, sensitive financial matters must be handled face-to-face to allow for the possibility of a face-saving resolution. Open the meeting without accusatory framing: 'We have noticed some payment discrepancies in your recent settlements that we would like to understand together.' This gives the hotel a genuine opportunity to present an innocent explanation — it may occasionally be an accounting error. If the violation is confirmed as intentional, state clearly and calmly the specific contractual clause that has been violated, the total estimated amount of commission impacted, and a specific deadline (7-14 days) to remit the outstanding balance and implement controls preventing recurrence. Document every commitment made in the meeting in a written follow-up within 24 hours. Escalate to Agoda's compliance and legal teams with the full evidence file per internal protocol, regardless of the hotel's response. Going directly to legal without attempting dialogue first will be interpreted within the local hotel community as aggressive and disproportionate — damaging your own standing as a trusted, relationship-oriented partner representative even when the hotel is demonstrably in the wrong."}
+]},
+
+{day:32,theme:"Revenue Strategy in the Thai Hotel Market",emoji:"📊🇹🇭",zone:4,zoneLabel:"Elite Zone",
+intro:"Day 32 — Elite Zone. Thai hotel revenue has unique dynamics: extreme seasonality, diverse Asian feeder markets, and properties ranging from barefoot luxury to budget guesthouses. These scenarios test your strategic depth as a commercial advisor.",
+keyTerms:[["RevPAR Index","Hotel's RevPAR as a percentage of the competitive set average — above 100 means outperforming the market"],["Content Score","OTA's metric of listing completeness and quality — directly impacts search ranking and CTR"],["Geo-targeted Promotion","Promotional deal visible only to users searching from a specific country or region"]],
+questions:[
+{q:"Low season in Koh Samui (May–October). Three top hotel partners have occupancy below 35%. All three demand an immediate blanket 40% rate cut across every room type. Why could this be the wrong primary strategy, and what do you recommend instead as their Market Manager?",
+clue:"💡 Blanket panic pricing creates at least four compounding downstream problems. Think segmentation, packaging, and targeted demand stimulation rather than a race to the bottom.",
+opts:["Agree entirely — deep rate cuts are the only mechanism that can stimulate low-season demand and you should implement them immediately","Blanket rate cuts risk triggering price wars, attracting mismatched guest segments, and permanently damaging ADR recovery. The correct recommendation is a multi-tactic strategy: geo-targeted domestic promotions, value-add packages, segment-specific campaigns, and controlled flash sales on specifically slow dates","Tell all three hotels to suspend operations during the low season months and reopen in November","Advise them to remove their properties from Agoda entirely during low season and focus exclusively on direct booking channels"],
+a:1,
+ex:"Recommending a blanket 40% rate cut is the reflexive but strategically costly response. The four compounding risks: First, it triggers competitive price wars — if your three properties cut 40%, their Koh Samui competitors respond within days and everyone ends up with lower ADR and unchanged occupancy. Second, deeply discounted luxury beach resorts attract guests whose expectations fundamentally mismatch the experience, generating negative reviews during the low season period that directly damage high-season conversion rates when rates need to be high. Third, training the booking market to expect 40% discounts in May through October makes future yield management during shoulder season nearly impossible — guests wait for the discount instead of booking at full rate in April. Fourth, ADR erosion in the market is genuinely difficult to reverse once it becomes established behavior. The recommended alternative strategy operates across five dimensions simultaneously: geo-targeted promotions of 15-20% (not 40%) directed specifically at Bangkok domestic travelers, Singapore weekend visitors, and Thailand-based expats using Agoda's geo-tools — these segments have short booking windows and strong demand even in low season; value-add packages that maintain the rate while improving perceived value (three nights plus a ฿2,000 spa credit and an airport transfer includes revenue-generating ancillary spending); minimum stay requirements of three nights that improve the economics of each booking compared to one-night stays at a deep discount; segment-specific campaigns targeting digital nomads with monthly rates, wellness travelers with curated spa packages, and families aligned to international school holiday calendars; and strategically timed flash sales applied only to the specifically slowest calendar weeks rather than sustained blanket discounting across the entire season."},
+{q:"A 5-star Bangkok hotel (BAR ฿5,000) has a RevPAR Index of 67 against their competitive set — meaning they are generating only 67% of what comparable competitors earn per available room. Their occupancy is 58% versus the CompSet average of 78%. As Market Manager, walk through your complete diagnostic framework before recommending any action.",
+clue:"💡 RevPAR Index underperformance at this level has multiple simultaneous root causes. A systematic six-dimension diagnosis prevents the common mistake of treating the visible symptom (low occupancy) while missing the actual disease.",
+opts:["Immediately advise them to lower their BAR by 25% to close the 20-point occupancy gap with the CompSet — price is the most obvious lever","Conduct a systematic diagnostic across six dimensions — pricing strategy, content quality, review score, distribution policies, promotional participation, and booking window utilization — before recommending any single action","Suggest they invest in adding more room inventory through renovation to generate greater total revenue","Advise them to exit all OTA channels immediately and focus exclusively on GDS corporate bookings to match their 5-star market positioning"],
+a:1,
+ex:"A RevPAR Index of 67 is serious underperformance requiring analytical rigor before any prescription, because treating the wrong root cause wastes six months of effort. The six-dimension diagnostic framework: First, pricing strategy — is their ฿5,000 BAR genuinely competitive versus the CompSet on equivalent date ranges and room types? Are they dynamically adjusting rates for Bangkok events, international conferences, and demand spikes, or operating on static annual rates? Pull competitive rate shopping data for the prior 90 days and identify specific dates where they were materially out of position. Second, content quality — compare their content score versus the CompSet: photo count, photo quality, description completeness, amenity accuracy, and policy clarity. Poor content directly reduces algorithm ranking and click-through rate before any pricing comparison is even made. Third, review score — even a 0.3-point gap versus the CompSet significantly impacts both algorithmic ranking and guest conversion rates. What are the three most frequently mentioned complaint themes in reviews from the past six months? Fourth, distribution policies — are they restricting OTA allotment? Offering only non-refundable rates? Setting minimum stay requirements that eliminate booking volume? These policies reduce conversion before the rate is ever evaluated. Fifth, promotional participation — are they enrolled in Agoda flash sales, member deals, and geo-targeted promotions for their primary feeder markets? Competing CompSet hotels almost certainly are. Sixth, booking window — are they engaging the 60-to-90-day advance booking window with early bird rates? Hotels missing this window lose significant forward volume. After completing the diagnostic, build a prioritized action plan with 30-60-90 day milestones, assign clear ownership for each action item to a specific hotel team member, and schedule monthly RevPAR Index review sessions to track recovery velocity."},
+{q:"A boutique Chiang Mai hotel has a genuinely exceptional 9.4 out of 10 review score and a charming, well-loved property — but a content score of only 38% and a position on page three of Agoda search results. The owner has declined professional photography three times, insisting that his own iPhone photos are more authentic and genuine. How do you change his mind using commercial evidence rather than aesthetic arguments?",
+clue:"💡 Never argue aesthetics with a creative, values-driven owner. Argue in Thai Baht — specifically, the precise monthly revenue he is currently losing because potential guests are clicking on his better-photographed competitors instead of him.",
+opts:["Accept his position respectfully — it is his property and his creative vision, and some travelers genuinely prefer authentic smartphone photography over staged professional images","Present data showing his listing click-through rate versus comparable boutique properties with professional photos, calculate the specific monthly revenue loss in Thai Baht attributable to lower CTR, offer Agoda's photography program to remove the financial barrier, and propose a 60-day data-driven pilot so the decision is based on evidence not opinion","Reduce his commission rate as a compensation measure for the reduced bookings caused by poor content","Demote his property to a lower partnership tier until he meets Agoda's minimum content standards"],
+a:1,
+ex:"The owner's authenticity objection is emotionally grounded and cannot be overcome with aesthetic counter-arguments — every aesthetic debate you win will lose you the relationship. The correct approach converts the conversation from taste to commercial evidence. Step one: pull his specific listing analytics and show his click-through rate compared to the three best-performing boutique hotels in Chiang Mai Old City, all of which have professional photography. The gap is typically three to five times lower CTR — this is the data, not your opinion. Step two: convert the CTR gap into lost monthly revenue in Thai Baht with specific arithmetic: if improved photos generate 600 additional monthly listing views at a 3% conversion rate at his average rate of ฿3,800, that equals approximately ฿68,400 in additional monthly revenue — ฿820,800 annually. Specific baht figures create visceral commercial impact that percentages never achieve. Step three: benchmark the leaders — 'The number one-ranked boutique hotel in Chiang Mai has a 91% content score and 26 professional photos. Their review score is 9.1 — lower than yours. Yet they receive three times your monthly booking volume. The only material difference is their photography.' Step four: remove the cost barrier entirely by offering Agoda's complimentary hotel photography program if available in Chiang Mai, or connecting him with a recommended local photographer who can deliver a full professional shoot for ฿4,000 to ฿7,000 — an investment recovered by a single additional booking. Step five: propose a 60-day controlled pilot — 'We upload professional photos and measure views, click-through rate, and bookings against your current baseline. If the data does not show meaningful improvement after 60 days, you have lost nothing and learned something real.' This framing treats him as the intelligent businessman he is, respects his authority over his property, and makes continued refusal commercially irrational rather than personally confrontational."},
+{q:"The Tourism Authority of Thailand announces a major Visit Thailand Year campaign with a ฿500 million government marketing budget specifically targeting Chinese, Indian, Korean, and Middle Eastern international tourists. As Market Manager for a portfolio of 40 Thai hotel partners, how do you proactively mobilize your properties to capture the maximum share of this demand wave?",
+clue:"💡 Government campaigns create a time-limited demand wave that rewards prepared hotels and punishes unprepared ones. Your role is to activate your portfolio before the wave arrives — not to react after bookings fail to materialize.",
+opts:["Monitor the campaign for 60 days before taking action — it is too early to determine which nationalities will actually convert to bookings","Immediately brief your entire hotel portfolio on the campaign targets and timeline, align promotional strategies for each nationality, optimize multilingual content and culturally relevant amenity information for each target market, and coordinate with Agoda's marketing team for co-branded campaign alignment and geo-targeted promotional deployment","Inform only your top five highest-revenue properties — smaller hotels in the portfolio will benefit automatically without requiring preparation","Communicate to all hotels that the campaign will generate bookings automatically and no changes to their listings or pricing strategy are required"],
+a:1,
+ex:"Government tourism campaigns operate on a predictable demand cycle — hotels that prepare in advance capture the bookings; those that wait lose them to prepared competitors in the same destination. Execution plan across three timeframes: In the first two weeks, brief your entire portfolio on the TAT campaign targets, specific nationality focus, anticipated arrival windows, and any co-marketing opportunities. Identify which properties in your portfolio are best positioned for each target nationality based on location, facilities, and price point. In weeks two through four, execute targeted content optimization by nationality: for Chinese guests, ensure property descriptions and key amenity information are available in Mandarin, that photos include features particularly valued by Chinese travelers such as in-room bathtubs and buffet breakfast presentation, and that UnionPay payment is prominently confirmed; for Middle Eastern guests, ensure halal dining certification is prominently listed with specific restaurant details, prayer room availability or the nearest mosque is documented, and pork-free kitchen confirmation is included in the amenities section; for Indian guests, vegetarian menu options with specific dish examples, Bollywood film or cultural event connections if relevant, and family-friendly facilities should be highlighted; for Korean guests, popular nearby Korean restaurant locations, Korean-language amenity summaries, and K-drama filming location proximity if applicable should be added. In weeks three through six, align promotional strategy with each nationality's peak booking calendar — Chinese Golden Week, Diwali for Indian travelers, Eid periods for Middle Eastern guests, and Korean Chuseok — creating targeted early-bird campaigns timed to these windows. Coordinate with Agoda's marketing team for homepage placement, geo-targeted push notifications sent to app users in each origin country, and potential co-branding with TAT's official campaign materials. Establish a weekly dashboard tracking new bookings by nationality to measure campaign impact in real time and adjust promotional deployment accordingly."},
+{q:"A Pattaya beach resort has a conversion rate of 1.8% versus the market average of 4.2%. Your investigation reveals four specific problems: the listing offers only non-refundable rates with no flexible option, there are no pool or beachfront photos despite this being the property's primary selling point, the minimum stay requirement is four nights, and a late checkout fee is charged but not disclosed on the listing. Rank your action priorities in order of conversion impact and justify the sequencing.",
+clue:"💡 CVR optimization follows a clear return-on-impact hierarchy. Always sequence your interventions to address the highest-converting fix first — not the cheapest or easiest to implement.",
+opts:["Priority one: lower the room rate by 30% immediately — price is universally the primary conversion driver for all beach resort markets","Priority one: add a free cancellation rate option alongside the non-refundable rate — policy flexibility delivers the largest single conversion lift, followed by adding beach and pool photos as the critical content fix, then removing the four-night minimum stay restriction, and finally adding transparent late checkout information","Priority one: generate 50 new positive reviews through a proactive review solicitation campaign before changing anything structural","Priority one: increase Agoda advertising spend to drive significantly more traffic volume — higher traffic will compensate for the low conversion rate through sheer scale"],
+a:1,
+ex:"CVR optimization is most effective when interventions are sequenced by impact magnitude rather than implementation ease. The correctly prioritized sequence and justification: First priority is adding a free cancellation rate option alongside the existing non-refundable rate, because policy flexibility consistently delivers a 25-40% conversion lift in competitive leisure beach markets. Pattaya has more than 200 beach resort listings — a non-refundable-only policy eliminates a traveler the moment they see it because equivalent flexible alternatives are one scroll away. The solution requires creating a second rate plan at a 12-15% premium over the non-refundable rate with free cancellation until 48-72 hours before arrival. Cost to the hotel is zero; conversion impact is immediate and substantial. Second priority is uploading professional beach and pool photography, because Pattaya travelers are emotionally purchasing the beach and swimming pool experience — if these are not visible in the first five photos of the listing, the emotional trigger to book never fires and no rate will compensate for that absence. A single professional photo shoot at ฿5,000-10,000 typically returns its cost within two to three additional bookings. Third priority is removing or significantly reducing the four-night minimum stay requirement. Bangkok to Pattaya is one of Thailand's most active short-trip corridors — the typical leisure visit is a Friday-to-Sunday getaway of two to three nights. A four-night minimum structurally eliminates approximately 65% of the natural demand for this destination before a potential guest even evaluates the rate. Reducing to a two-night minimum or eliminating the restriction entirely reopens access to the majority of the market. Fourth priority is adding transparent and positive late checkout language to the listing — replacing hidden charges with the phrase 'flexible late checkout available on request' in the amenities section. Hidden charges generate a specific and disproportionate pattern of negative reviews mentioning unexpected costs, which compound the CVR problem well beyond the booking stage. Fifth, and only after all four fixes are implemented and measured, consider selective rate adjustments if CVR remains below target. Lowering price on a listing with restrictive policies and absent content drives additional volume at permanently lower ADR without addressing the root cause of conversion failure."}
+]},
+
+{day:33,theme:"Advanced Negotiation & Long-Game Strategy",emoji:"🤝💡",zone:4,zoneLabel:"Elite Zone",
+intro:"Day 33 — The final Elite challenge. These five scenarios test your commercial negotiation instincts, ethical judgment under pressure, and long-game strategic thinking in Thailand's sophisticated hotel partnership landscape.",
+keyTerms:[["True Cost of Direct","Full cost of running competitive direct booking channels including technology, marketing, customer acquisition, and multilingual support — often 14-22%"],["Channel Independence Strategy","Hotel strategy to reduce OTA dependency — typically underestimates true cost and market reach gap"],["Structured Financial Dialogue","Facilitated repayment framework for a partner in financial distress, balancing guest protection and commercial recovery"]],
+questions:[
+{q:"A major Thai hotel group with 30 properties across Bangkok, Phuket, and Samui presents a business case showing that direct bookings save them 18% per booking compared to Agoda's commission. They have engaged a technology company to build a proprietary booking engine and plan to exit all OTA agreements in 12 months. You have a 90-minute strategic meeting. What is your approach?",
+clue:"💡 The hotel's 18% saving calculation is mathematically real but dangerously incomplete. The true cost of a competitive direct channel is hidden in customer acquisition, technology maintenance, multilingual support, and low-season fill rate exposure.",
+opts:["Acknowledge their business case is economically sound and agree with the strategy — respecting their commercial autonomy builds long-term goodwill","Immediately offer to match any commission reduction they request to retain all 30 properties at any cost","Present a comprehensive and evidence-based counter-case covering the true total cost of direct booking operations, Agoda's irreplaceable international market reach and low-season demand generation, and propose a hybrid partnership model where Agoda serves their international and new-guest acquisition needs while their direct channel serves repeat and domestic guests","Immediately reference exclusivity clauses in their partner agreements and signal potential legal action if they attempt early termination"],
+a:2,
+ex:"The hotel's business case shows commission saved but systematically hides the cost of what they are replacing. Structure your 90-minute meeting in four acts. In the first twenty minutes, present the true cost of direct. A competitive booking engine matching Agoda's capability requires ฿8-15 million in initial development plus ฿3-5 million annually in maintenance and feature updates. Google Ads investment to compete in high-intent travel search terms for Bangkok, Phuket, and Samui as three separate geographic markets costs ฿2-8 million per market annually. SEO investment to rank organically for travel search terms takes 18-24 months of sustained content and link-building effort before meaningful organic traffic materializes. Multilingual customer service in Thai, English, Chinese, Korean, and Arabic for guests across 30 properties requires dedicated team investment of ฿3-6 million annually. Payment processing and fraud management across 40 or more currencies and payment types costs 2-3% per transaction. The honest total cost of operating a genuinely competitive direct channel is 14-22% when fully and accurately accounted — not materially different from OTA commission. In the second twenty minutes, address market reach. Ask directly: 'What is your direct booking engine's plan to acquire a Chinese traveler who begins their hotel search on Ctrip or WeChat? What is your strategy to reach a Korean family planning their first Bangkok visit through Naver?' Agoda's established presence in these markets took 15 years and hundreds of millions in investment to build. In the third fifteen minutes, address low-season vulnerability. During Koh Samui's May-October low season, Agoda's global flash sale and promotional machine actively generates bookings through channels that a direct website cannot access. Ask how their direct channel will fill 30 properties during monsoon months without this demand generation infrastructure. In the final 35 minutes, propose the hybrid model. Agoda serves international travelers, first-visit guests, and low-season demand generation — segments where direct channels are structurally weak. Their direct channel serves repeat guests, domestic travelers, and loyalty program members — segments where direct is genuinely strong. This reframes the conversation from replacement to specialization, and removes the emotional either-or dynamic from the negotiation."},
+{q:"An 8-room eco-resort on Koh Lipe has a 9.7 out of 10 review score, runs at 100% occupancy every high season through word-of-mouth and travel blog coverage alone, and has refused to join Agoda for three consecutive years. The owner believes OTAs bring the wrong type of guests who are incompatible with his property's philosophy and conservation mission. You are making your fourth visit. What is your most effective approach?",
+clue:"💡 After three rejections, this owner has already heard every commission and revenue argument you could make. He is motivated by philosophy and guest experience quality — not by money. Speak his language this time.",
+opts:["Accept the situation and stop pursuing — not every property needs to be on Agoda, and persistent pursuit after multiple rejections damages the relationship","Offer a dramatically reduced commission rate of 5% to make the financial proposition so compelling that it overcomes his philosophical objections","Invest the full meeting in genuinely understanding what specific type of wrong guest he fears, demonstrate with data how Agoda's premium pricing and platform characteristics naturally filter for his exact desired guest profile, propose a maximum-control limited inventory pilot with every protection he needs, and use the relationship capital accumulated across four visits to make this ask credible","Warn him that his competitor eco-properties are growing faster on Agoda and that he risks losing his market position to less authentic rivals"],
+a:2,
+ex:"After three rejections, arriving with a fourth commission savings argument guarantees a fourth refusal and damages whatever relationship trust you have built. The approach must fundamentally change. Begin the meeting by genuinely asking — not rhetorically — what specifically 'wrong type of guest' means to him. Is it price-sensitive backpackers who ignore reef conservation rules? Day-tripper groups who treat the property as a party venue? Guests who photograph everything rather than experiencing it? Guests who leave negative reviews because they expected a Marriott? Listening completely and specifically for 20-30 minutes before speaking accomplishes two things: it shows a quality of attention that four years of visits has built toward, and it reveals the specific fear that requires the specific solution. With the specific fear identified, address it precisely with data. If his fear is price-insensitive guests: eco-resorts priced at ฿8,000 or more per night on Agoda naturally and algorithmically filter out budget travelers — the platform user searching at that price point is a conscious, experienced, values-aligned traveler, not an accidental backpacker. Show him the review content and nationality profile of guests staying at comparable premium eco-properties in the Andaman region listed on Agoda. With the data presented, address the control he would retain: a four-night minimum stay that eliminates short-stay visitors incompatible with deep conservation experiences; adults-only policy enforced through the listing; a reef conservation commitment agreement required as a pre-stay acknowledgment listed in the booking terms; a premium rate with no promotional discounting ever applied; member deals and flash sales explicitly excluded from his listing. Then propose the absolute minimum-risk pilot: list only two rooms — not all eight — at his full premium rate with every control in place for the October to December 2024 shoulder season. He risks essentially nothing. Your fourth visit and three years of respectful persistence have built credibility that makes this ask possible — use that accumulated relationship capital deliberately and specifically."},
+{q:"Two competing 5-star hotels in Bangkok — Hotel Grand Silom and Hotel Imperial Sathorn, both your active Agoda partners — each separately request in private meetings that you share the other hotel's specific Agoda performance data including occupancy rate, ADR, and RevPAR to use in their own competitive intelligence and sales strategy. How do you handle both requests?",
+clue:"💡 This is an ethical boundary that cannot be moved regardless of how it is framed or how much commercial pressure exists. But there is significant legitimate value you CAN provide to both hotels that addresses their underlying competitive need.",
+opts:["Share the performance data with both hotels — competitive transparency creates healthy motivation and both partners will perform better as a result","Create a mutual data exchange arrangement where each hotel's data is shared with the other simultaneously — if both parties request it, it becomes a fair bilateral agreement","Firmly but diplomatically decline to share either partner's specific confidential performance data with the other, offer aggregate anonymized market benchmarks and Agoda's CompSet analysis tool as the ethical alternative, and use the reframe to redirect each conversation toward that hotel's own improvement opportunities","Escalate both requests to Agoda's legal team for guidance and pause engagement with both hotels until legal provides a formal position"],
+a:2,
+ex:"This is a non-negotiable ethical boundary, and how you decline determines whether you strengthen or weaken both relationships simultaneously. The response framework for each hotel: Deliver the refusal clearly, confidently, and without apology — 'I am not able to share Hotel Imperial's confidential Agoda performance data with you. And I want you to know equally that I would never share your data with them or any other partner. This is a principle I apply completely consistently, and it is ultimately what protects your data and your trust in working with me.' This delivery signals that the refusal comes from professional integrity, not from bureaucratic policy — a meaningful distinction in relationship-based partnerships. Never hesitate, qualify, or apologize for this position, because any wavering invites continued pressure. Immediately following the refusal, offer genuine alternative value: aggregate and anonymized market intelligence such as 'I can share that top-performing 5-star properties in the Sathorn-Silom corridor are averaging 76% occupancy and approximately ฿6,200 ADR this quarter based on market-level data — this gives you a meaningful benchmark without exposing any specific partner.' If Agoda's partner portal includes a CompSet benchmarking tool, offer to run a formal analysis showing each hotel's position versus an anonymized composite of their competitive set — this provides the competitive intelligence they are seeking through an ethically constructed mechanism. Third, redirect the conversation to that hotel's specific opportunity: 'Rather than focusing on what your competitor is doing, let me share where I see your biggest addressable gap based on your own data. Your content score is 12 points below the top-performing properties in your set and that is directly affecting your search ranking — let us build a specific action plan around that.' This transforms a declined request into one of the most valuable conversations you have had with that partner in months. Document both requests internally, because repeated attempts to extract competitor data from a single partner may eventually require a direct conversation about appropriate engagement boundaries."},
+{q:"A new General Manager — an experienced hotelier from Germany with a strong track record of reducing OTA dependency at European properties — joins one of your top Hua Hin beach resort partners. Within 30 days of arrival, he announces a Channel Independence Strategy targeting a reduction from 65% to 20% OTA dependency within 12 months, cuts Agoda's room allotment by 40%, cancels your quarterly business review, and declines three subsequent meeting requests. What is your 90-day strategic response?",
+clue:"💡 New GMs with a mandate to prove themselves are emotionally invested in their strategy and will interpret direct confrontation as confirmation that OTAs are an adversary. The winning approach is patient, data-driven, and strategically counterintuitive.",
+opts:["Respect the decision fully and reduce your engagement frequency with this partner to match their reduced interest in the partnership","Immediately escalate to the resort ownership group or board to override the new GM's strategic decision","Respect the strategy completely in all external communications, maintain warm and regular contact without pushing back, reposition yourself as supportive of their direct channel goals, carefully document the actual booking performance impact, and be strategically ready with a revised partnership framework at the specific moment when the strategy proves more difficult than projected","Respond by removing the property from all Agoda promotional programs immediately to demonstrate the tangible value they are choosing to give up"],
+a:2,
+ex:"New GMs arriving with a transformation mandate are emotionally and professionally invested in their strategy — direct confrontation makes you a character in their narrative of OTA adversarialism and confirms the story they are already telling. The winning approach is patient, counterintuitive, and data-driven across a 90-day arc. In the first two weeks, make one final outreach — not to argue against the strategy, but to request a brief meeting specifically to 'understand his vision for the property's distribution strategy and explore whether there are ways Agoda can actively support the direct channel goals he is building toward.' This completely unexpected repositioning signals confidence rather than desperation and often disarms the defensiveness that rejection has built up. In months one through three, monitor the actual booking velocity meticulously every week: total occupancy, ADR by segment, booking window changes, and nationality mix. Track specifically which nationality segments begin declining as OTA allotment shrinks — Chinese, Korean, and Middle Eastern guests in particular are structurally difficult to acquire through European-designed direct channels. Document this data carefully without sharing any of it yet, because the right moment to present it has not arrived. Keep the property enrolled in every Agoda promotional program for which they remain eligible — when their competitor properties benefit from flash sale traffic during a slow week in September and their own occupancy goes unfilled, the contrast creates internal pressure without a single word from you. At the 90-day mark, when the reality of building competitive direct booking volume — Google Ads costs, conversion rates below 1.5% without significant optimization investment, the absence of Asian language booking support — has become clear to the GM through his own experience rather than your argument, approach with a revised hybrid partnership framework: 'Agoda for international first-visit guests and low-season demand generation, your direct channel for repeat domestic guests and loyalty program members.' This proposal does not contradict his stated strategy — it complements it, resolving the internal tension between his ambition and his monthly occupancy report. Patience and data win this negotiation."},
+{q:"During a prolonged tourism crisis caused by political unrest affecting Bangkok, a major Phuket beach resort — historically generating ฿8 million in monthly Agoda bookings — has paid zero financial settlements for three consecutive months, accumulating ฿24 million in outstanding obligations. The hotel's ownership has communicated that they are at genuine risk of permanent closure. The property currently has 1,200 confirmed future Agoda bookings from guests who have already paid. How do you navigate this situation balancing Agoda's financial interests, the long-term partnership, and your non-negotiable obligation to guest protection?",
+clue:"💡 Financial distress of a major partner is far beyond Market Manager authority — but you remain the most critical relationship bridge between Agoda and the hotel. Guest protection is the only truly non-negotiable first priority.",
+opts:["Immediately suspend the property's Agoda listing and send a formal demand letter requiring full ฿24 million settlement within seven days","Continue the partnership as normal without escalating — the hotel will recover when the crisis passes and any pressure on the relationship now will permanently damage future cooperation","Escalate immediately to Agoda Finance and Legal while serving as the internal relationship bridge, assess the hotel's genuine operational viability with ownership, prioritize protection of all 1,200 confirmed guest bookings above every other consideration, facilitate structured repayment dialogue between the relevant Agoda teams and hotel ownership, and maintain comprehensive documentation of every commitment and decision throughout the process","Write off the entire ฿24 million as a goodwill gesture to preserve the partnership relationship and protect the future revenue potential of the property"],
+a:2,
+ex:"This scenario requires simultaneous management of four distinct and partly competing priorities, and the order in which you address them matters profoundly. The first and genuinely non-negotiable priority is guest protection. Fourteen hundred guests hold confirmed reservations backed by payments they have already made. Before any financial settlement discussion occurs, you must assess with the hotel's operational team whether confirmed future bookings can actually be honored given the current cash flow crisis. If there is genuine operational uncertainty, immediately flag the situation to Agoda's Customer Experience leadership so they can begin preparing proactive guest communication protocols and identifying alternative accommodation options in Phuket for potential relocation. Guests who receive proactive advance notice and a quality alternative will understand; guests who arrive at a beachfront resort to find it closed will involve media, social media, and potentially regulatory authorities. The second priority is immediate internal escalation. A ฿24 million outstanding obligation is categorically beyond Market Manager authority or mandate. Escalate to Finance, Legal, and senior commercial leadership within 24 hours of confirming the situation, with a complete account of the hotel's circumstances, the outstanding obligation breakdown, the confirmed booking exposure, and your assessment of the relationship history. Your role from this point forward is relationship bridge and contextual advisor — not debt negotiator or legal representative. The third priority is genuine viability assessment. Work with ownership and management to answer the critical question honestly: is this a temporary liquidity crisis where the business is fundamentally viable and can recover within six to twelve months when tourism normalizes, or is this terminal distress where the property cannot survive regardless of any settlement arrangement? The answer fundamentally changes every subsequent decision. Temporary crisis may justify a structured repayment plan tied to future booking revenue — partial immediate payment plus monthly installments. Terminal distress requires immediate guest protection execution and asset recovery procedures through legal channels. The fourth priority is the listing decision, which is genuinely complex. Suspending the listing removes the hotel's primary remaining revenue generation mechanism, which directly reduces their ability to generate the cash flow needed to honor existing bookings and make settlement payments — this is a real strategic tension that Finance and Legal must evaluate carefully rather than defaulting to the punitive response. Throughout every stage, document every conversation, every verbal commitment, every decision and its rationale in writing with timestamps. If legal proceedings become necessary, your documentation of how the situation was managed will be essential for Agoda's position."}
+]}
+];
+
+// ═══════════════════════════════════════════════════════════════
+//  GAME STATE
+// ═══════════════════════════════════════════════════════════════
+const STATE = {
+  screen: 'home', // home | intro | game | complete
+  currentDay: null,
+  qIndex: 0,
+  score: 0,
+  answers: [], // true/false per question
+  timerSec: 300,
+  timerRef: null,
+  clueShown: false,
+  answered: false,
+  progress: JSON.parse(localStorage.getItem('ota_progress') || '{}'),
+  // progress = { dayNum: { score, date, stars } }
+};
+
+function saveProgress(day, score, stars) {
+  STATE.progress[day] = { score, stars, date: new Date().toISOString().split('T')[0] };
+  localStorage.setItem('ota_progress', JSON.stringify(STATE.progress));
+}
+
+function getStreak() {
+  const today = new Date().toISOString().split('T')[0];
+  const dates = Object.values(STATE.progress).map(p => p.date).sort();
+  if (!dates.length) return 0;
+  let streak = 0;
+  let d = new Date(today);
+  while (true) {
+    const ds = d.toISOString().split('T')[0];
+    if (dates.includes(ds)) { streak++; d.setDate(d.getDate()-1); }
+    else break;
+  }
+  return streak;
+}
+
+function getStars(score, total) {
+  const pct = score / (total * 10);
+  if (pct >= 0.9) return 3;
+  if (pct >= 0.7) return 2;
+  if (pct >= 0.5) return 1;
+  return 0;
+}
+
+function getDayStatus(dayNum) {
+  if (STATE.progress[dayNum]) return 'done';
+  // Allow playing today's next undone day OR any day
+  return 'today';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RENDER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════
+const app = document.getElementById('app');
+
+function render() {
+  if (STATE.screen === 'home') renderHome();
+  else if (STATE.screen === 'intro') renderIntro();
+  else if (STATE.screen === 'game') renderGame();
+  else if (STATE.screen === 'complete') renderComplete();
+}
+
+function renderHome() {
+  const doneCount = Object.keys(STATE.progress).length;
+  const streak = getStreak();
+  const nextDay = Math.min(doneCount + 1, 45);
+
+  app.innerHTML = `
+    <div class="header">
+      <div class="header-icon">🏨</div>
+      <div>
+        <h1>OTA Daily Learning Loop</h1>
+        <p>45-Day Mastery Program · Agoda Onboarding</p>
+      </div>
+    </div>
+
+    <div class="home-stats">
+      <div class="stat-box"><span class="s-val">${doneCount}/45</span><div class="s-lbl">Days Done</div></div>
+      <div class="stat-box"><span class="s-val">${streak}🔥</span><div class="s-lbl">Day Streak</div></div>
+      <div class="stat-box"><span class="s-val">5min</span><div class="s-lbl">Per Session</div></div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:.78rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:12px">
+        📅 Your 45-Day Journey
+      </div>
+      <div class="overview-grid">
+        ${DAYS.map(d => {
+          const status = STATE.progress[d.day] ? 'done' : (d.day === nextDay ? 'today' : 'locked');
+          const stars = STATE.progress[d.day] ? STATE.progress[d.day].stars : 0;
+          const starStr = stars === 3 ? '⭐⭐⭐' : stars === 2 ? '⭐⭐' : stars === 1 ? '⭐' : (status === 'done' ? '✓' : (status === 'today' ? '▶' : '·'));
+          return `<div class="day-dot ${status}" onclick="startDay(${d.day})" title="${d.theme}">
+            <span class="dot-num">${d.day}</span>
+            <span class="dot-star">${starStr}</span>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="text-muted mt8" style="font-size:.76rem">
+        🟢 Completed &nbsp; 🔴 Today's Loop &nbsp; ⬜ Upcoming
+      </div>
+    </div>
+
+    <div class="card" style="background:linear-gradient(135deg,#fff8e1,#fff3e0);border:1.5px solid #ffd54f">
+      <div style="font-weight:700;margin-bottom:6px">🎯 Today's Recommended Loop</div>
+      <div style="font-size:.88rem;color:var(--muted);margin-bottom:12px">
+        Day ${nextDay}: <strong>${DAYS[nextDay-1].theme}</strong> · ${DAYS[nextDay-1].zoneLabel}
+      </div>
+      <button class="btn-start" onclick="startDay(${nextDay})">
+        ▶ Start Day ${nextDay} — ${DAYS[nextDay-1].emoji} ${DAYS[nextDay-1].theme}
+      </button>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:700;margin-bottom:10px">📚 Browse All Topics</div>
+      ${[1,2,3,4].map(zone => {
+        const zDays = DAYS.filter(d => d.zone === zone);
+        const zLabel = zone === 1 ? '🟢 Beginner Zone (Days 1–10)' : zone === 2 ? '🟡 Intermediate Zone (Days 11–20)' : zone === 3 ? '🔴 Expert Zone (Days 21–30)' : '🔥 Elite Zone (Days 31–45)';
+        return `<div style="margin-bottom:12px">
+          <div style="font-size:.8rem;font-weight:700;color:var(--muted);margin-bottom:6px">${zLabel}</div>
+          ${zDays.map(d => {
+            const done = STATE.progress[d.day];
+            return `<div onclick="startDay(${d.day})" style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;cursor:pointer;margin-bottom:4px;background:${done ? '#f0fdf4' : '#fafafa'};border:1.5px solid ${done ? '#86efac' : 'var(--border)'}">
+              <span>${d.emoji}</span>
+              <span style="flex:1;font-size:.87rem;font-weight:600">Day ${d.day}: ${d.theme}</span>
+              <span style="font-size:.75rem;color:var(--muted)">${done ? '⭐'.repeat(done.stars || 1) + ' Done' : '▶'}</span>
+            </div>`;
+          }).join('')}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function renderIntro() {
+  const day = DAYS[STATE.currentDay - 1];
+  app.innerHTML = `
+    <div class="header"><div class="header-icon">${day.emoji}</div>
+      <div><h1>Day ${day.day} of 30</h1><p>${day.zoneLabel} · 5-Minute Loop</p></div>
+    </div>
+    <div class="day-banner">
+      <div class="day-label">Day ${day.day} · ${day.zoneLabel}</div>
+      <div class="day-title">${day.emoji} ${day.theme}</div>
+      <div class="day-intro">${day.intro}</div>
+      <span class="difficulty-badge">${day.zone === 1 ? '⭐ Beginner' : day.zone === 2 ? '⭐⭐ Intermediate' : day.zone === 3 ? '⭐⭐⭐ Expert' : '🔥 Elite'}</span>
+    </div>
+    <div class="card">
+      <div style="font-weight:700;margin-bottom:10px">📖 Today you'll learn:</div>
+      ${day.keyTerms.map(([term, def]) => `
+        <div class="term-row"><span class="term-name">${term}</span><span class="term-def">${def}</span></div>
+      `).join('')}
+      <div class="text-muted mt16" style="font-size:.8rem">5 questions · 5 minutes · Clues available if needed</div>
+    </div>
+    <button class="btn-start" onclick="startGame()">🎯 Start Today's 5-Question Loop →</button>
+    <div style="text-align:center;margin-top:12px">
+      <button class="btn btn-secondary" onclick="STATE.screen='home';render()" style="font-size:.82rem;padding:8px 20px">← Back to Home</button>
+    </div>`;
+}
+
+function renderGame() {
+  const day = DAYS[STATE.currentDay - 1];
+  const q = day.questions[STATE.qIndex];
+  const total = day.questions.length;
+  const pct = Math.round((STATE.qIndex / total) * 100);
+  const mins = Math.floor(STATE.timerSec / 60);
+  const secs = String(STATE.timerSec % 60).padStart(2, '0');
+  const timerClass = STATE.timerSec <= 30 ? 'urgent' : STATE.timerSec <= 60 ? 'warning' : '';
+
+  app.innerHTML = `
+    <div class="header" style="padding:14px 20px">
+      <div class="header-icon" style="font-size:1.6rem">${day.emoji}</div>
+      <div style="flex:1"><div style="font-size:.88rem;font-weight:700">Day ${day.day}: ${day.theme}</div>
+        <div style="font-size:.75rem;opacity:.8">Question ${STATE.qIndex + 1} of ${total}</div></div>
+      <div class="timer ${timerClass}">${mins}:${secs}</div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
+
+    <div class="card" id="qcard">
+      <div class="q-meta">
+        <span class="q-num">Question ${STATE.qIndex + 1} / ${total}</span>
+        <span style="font-size:.8rem;color:var(--muted)">${day.zoneLabel}</span>
+      </div>
+      <div class="q-text">${q.q}</div>
+      <button class="clue-btn" id="clueBtn" onclick="showClue()" ${STATE.clueShown ? 'style="display:none"' : ''}>
+        💡 Show Clue
+      </button>
+      <div class="clue-reveal" id="clueBox" style="${STATE.clueShown ? 'display:block' : ''}">${q.clue}</div>
+      <div class="options" id="opts">
+        ${q.opts.map((opt, i) => `
+          <button class="opt" id="opt${i}" onclick="answerQ(${i})">${String.fromCharCode(65+i)}. ${opt}</button>
+        `).join('')}
+      </div>
+      <div class="explain-box" id="explainBox"></div>
+    </div>
+    <button class="btn btn-primary" id="nextBtn" style="display:none" onclick="nextQuestion()">
+      ${STATE.qIndex + 1 < total ? 'Next Question →' : '🏁 See Results'}
+    </button>`;
+
+  // Restore answered state if needed
+  if (STATE.answered) {
+    applyAnsweredUI(q, -1); // -1 means already answered, just restore state
+  }
+}
+
+function showClue() {
+  STATE.clueShown = true;
+  document.getElementById('clueBtn').style.display = 'none';
+  const cb = document.getElementById('clueBox');
+  cb.style.display = 'block';
+}
+
+function answerQ(chosen) {
+  if (STATE.answered) return;
+  STATE.answered = true;
+  const day = DAYS[STATE.currentDay - 1];
+  const q = day.questions[STATE.qIndex];
+  const correct = chosen === q.a;
+
+  if (correct) STATE.score += 10;
+  STATE.answers[STATE.qIndex] = correct;
+
+  // Style options
+  const opts = document.querySelectorAll('.opt');
+  opts.forEach((el, i) => {
+    el.disabled = true;
+    if (i === q.a) el.classList.add('correct');
+    else if (i === chosen && !correct) el.classList.add('wrong');
+  });
+
+  // Show explanation
+  const ex = document.getElementById('explainBox');
+  ex.className = 'explain-box' + (correct ? '' : ' wrong-box');
+  ex.innerHTML = (correct ? '✅ Correct! ' : '❌ Not quite. ') + q.ex;
+  ex.style.display = 'block';
+
+  // Show next button
+  document.getElementById('nextBtn').style.display = 'block';
+
+  // Stop clue button
+  const cb = document.getElementById('clueBtn');
+  if (cb) cb.style.display = 'none';
+}
+
+function applyAnsweredUI(q, chosen) {
+  // Just show the explanation without re-scoring
+  const ex = document.getElementById('explainBox');
+  if (ex) { ex.style.display = 'block'; }
+}
+
+function nextQuestion() {
+  const day = DAYS[STATE.currentDay - 1];
+  STATE.qIndex++;
+  STATE.answered = false;
+  STATE.clueShown = false;
+  if (STATE.qIndex >= day.questions.length) {
+    endGame();
+  } else {
+    render();
+  }
+}
+
+function endGame() {
+  clearInterval(STATE.timerRef);
+  const stars = getStars(STATE.score, DAYS[STATE.currentDay-1].questions.length);
+  saveProgress(STATE.currentDay, STATE.score, stars);
+  STATE.screen = 'complete';
+  render();
+  if (stars >= 2) launchConfetti();
+}
+
+function renderComplete() {
+  const day = DAYS[STATE.currentDay - 1];
+  const total = day.questions.length;
+  const maxScore = total * 10;
+  const pct = Math.round((STATE.score / maxScore) * 100);
+  const stars = STATE.progress[STATE.currentDay]?.stars || getStars(STATE.score, total);
+  const streak = getStreak();
+  const msg = pct === 100 ? '🎉 Perfect Score! You\'re unstoppable!' :
+    pct >= 80 ? '🌟 Excellent! Almost perfect!' :
+    pct >= 60 ? '💪 Great effort! Review the explanations and try again.' :
+    '📖 Keep going — practice makes perfect!';
+  const nextDay = Math.min(STATE.currentDay + 1, 45);
+  const done30 = STATE.currentDay === 30 && Object.keys(STATE.progress).length >= 30;
+
+  app.innerHTML = `
+    ${done30 ? `<div class="complete-banner">
+      <div style="font-size:3rem">🏆</div>
+      <h2>45-Day Master Achieved!</h2>
+      <p>You've completed the full OTA Mastery Program. You're ready to talk to any client!</p>
+    </div>` : ''}
+    <div class="header"><div class="header-icon">✅</div>
+      <div><h1>Day ${day.day} Complete!</h1><p>${day.theme}</p></div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="stars">${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+      <div class="score-big">${STATE.score}/${maxScore}</div>
+      <div class="score-label">${pct}% · ${msg}</div>
+      <div class="divider"></div>
+      <div style="display:flex;justify-content:space-around;margin-top:12px">
+        ${STATE.answers.map((correct, i) => `
+          <div style="text-align:center">
+            <div style="font-size:1.5rem">${correct ? '✅' : '❌'}</div>
+            <div style="font-size:.7rem;color:var(--muted)">Q${i+1}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="streak-badge">
+      <span class="s-num">${streak}🔥</span>
+      <span class="s-label">Day Streak — Keep it up!</span>
+    </div>
+
+    <div class="key-terms card">
+      <h4>📚 Today's Key Terms Recap</h4>
+      ${day.keyTerms.map(([t,d]) => `<div class="term-row"><span class="term-name">${t}</span><span class="term-def">${d}</span></div>`).join('')}
+    </div>
+
+    ${STATE.currentDay < 30 ? `
+    <div class="card" style="background:#fff8e1;border:1.5px solid #ffd54f">
+      <div style="font-weight:700;margin-bottom:6px">⏭ Up Next: Day ${nextDay}</div>
+      <div style="font-size:.88rem;color:var(--muted);margin-bottom:12px">${DAYS[nextDay-1].emoji} ${DAYS[nextDay-1].theme} · ${DAYS[nextDay-1].zoneLabel}</div>
+      <button class="btn-start" onclick="startDay(${nextDay})">▶ Start Day ${nextDay} Now</button>
+    </div>` : ''}
+
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-secondary" style="flex:1" onclick="startDay(${STATE.currentDay})">🔄 Replay Day ${STATE.currentDay}</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="STATE.screen='home';render()">🏠 Home</button>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════════════════════
+function startDay(dayNum) {
+  STATE.currentDay = dayNum;
+  STATE.qIndex = 0;
+  STATE.score = 0;
+  STATE.answers = [];
+  STATE.timerSec = 300;
+  STATE.clueShown = false;
+  STATE.answered = false;
+  STATE.screen = 'intro';
+  render();
+  window.scrollTo(0,0);
+}
+
+function startGame() {
+  STATE.screen = 'game';
+  render();
+  startTimer();
+  window.scrollTo(0,0);
+}
+
+function startTimer() {
+  clearInterval(STATE.timerRef);
+  STATE.timerRef = setInterval(() => {
+    STATE.timerSec--;
+    if (STATE.timerSec <= 0) {
+      clearInterval(STATE.timerRef);
+      // Auto-advance if time's up
+      if (!STATE.answered) answerQ(-1); // Force reveal
+    }
+    // Update timer display only
+    const el = document.querySelector('.timer');
+    if (el) {
+      const m = Math.floor(STATE.timerSec / 60);
+      const s = String(STATE.timerSec % 60).padStart(2,'0');
+      el.textContent = `${m}:${s}`;
+      el.className = 'timer' + (STATE.timerSec <= 30 ? ' urgent' : STATE.timerSec <= 60 ? ' warning' : '');
+    }
+  }, 1000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CONFETTI
+// ═══════════════════════════════════════════════════════════════
+function launchConfetti() {
+  const canvas = document.getElementById('confetti');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const pieces = Array.from({length: 80}, () => ({
+    x: Math.random() * canvas.width,
+    y: -10 - Math.random() * 100,
+    w: 8 + Math.random() * 8,
+    h: 6 + Math.random() * 6,
+    color: ['#e53935','#ff6d00','#ffd600','#43a047','#1e88e5'][Math.floor(Math.random()*5)],
+    r: Math.random() * Math.PI * 2,
+    dr: (Math.random() - 0.5) * 0.15,
+    dy: 2 + Math.random() * 3,
+    dx: (Math.random() - 0.5) * 2
+  }));
+  let frame = 0;
+  function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach(p => {
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+      ctx.restore();
+      p.y += p.dy; p.x += p.dx; p.r += p.dr;
+    });
+    frame++;
+    if (frame < 150) requestAnimationFrame(draw);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  draw();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════
+render();
+</script>
+</body>
+</html>
